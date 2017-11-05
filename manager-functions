@@ -41,7 +41,7 @@ run_script() {
     subject="Success - ${EMAILSUBJECT}"
 
     if [ -x "${run}" ] && [ -f "${run}" ]; then
-      log_begin_msg "Execute ${run}"
+      log_begin_msg "Execute ${run} ${2}"
       output=$(${run} ${2})
       retval=$?
 
