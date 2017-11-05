@@ -11,10 +11,11 @@ export _ORDER
 export _QUIET
 export _LOGDIR
 export _DEBUG
-export _EXEC
 export _SCRIPTCONF
 export _LOGFILE
 export _PIDFILE
+
+_EXEC="null"
 
 
 main() {
@@ -37,7 +38,9 @@ main() {
           _LOGFILE="${_LOGDIR}/${script}_log"
           [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
           read_config "${_SCRIPTCONF}/${script}.conf" && {
+            ${SERVER} && HOSTNAME="$SSH_HOST" || HOSTNAME="$(/bin/hostname -f)"
             for dir in ${BACKUP_DIR[@]}; do
+              EMAILSUBJECT="Backup Files ${HOSTNAME}"
               run_script ${script} ${dir}
             done
           }

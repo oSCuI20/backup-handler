@@ -27,7 +27,6 @@ main_backup() {
   rsync_options=("--force" "--ignore-errors" "--delete" \
                  "--backup" "--backup-dir=${increment}" "-azh")
 
-  EMAILSUBJECT="Backup Files ${HOSTNAME} - ${directory}"
   printf "Starting backup, ${directory} at `/bin/date`\n"
 
   export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
