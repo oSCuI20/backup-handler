@@ -25,7 +25,7 @@ main_backup() {
   main="${backup_dir}/main${directory}"
   increment="${backup_dir}/${now}"
   rsync_options="--force --ignore-errors --delete \
-                 --backup --backup-dir=${increment} -acz"
+                 --backup --backup-dir=${increment} -azh"
 
   EMAILSUBJECT="Backup Files ${HOSTNAME} - ${directory}"
   log_script_msg "Starting backup, ${directory} at `/bin/date`\n"
