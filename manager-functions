@@ -3,7 +3,7 @@
 ## Logging functions
 _log_msg() {
 
-  ! ${_QUIET} || ${DEBUG} && {
+  ! ${_QUIET} || ${_DEBUG} && {
     printf "$@"
   }
 
@@ -55,7 +55,7 @@ run_script() {
       subject="Warning - ${EMAILSUBJECT}"
     fi
   fi  # if [ ${#@} -eq 0 ]; then
-  _log_msg "${output}"
+  log_script_msg "${output}"
   EMAILSUBJECT="${subject}"
 }  #run_script
 
