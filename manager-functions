@@ -22,9 +22,11 @@ log_end_msg() { _log_msg "done\n"; }
 log_script_msg() {
   IFS=$'\n'
   for line in $1; do
-    printf " * ${line}\n"
+    ! ${_QUIET} && printf " * ${line}\n"
+    ${EMAIL} && printf " * ${line}\n" >> "${_LOGFILE}"
   done
-  printf "\n"
+  ! ${_QUIET} &&  printf "\n"
+  ${EMAIL} &&  printf "\n" >> "${_LOGFILE}"
 }  #log_script_msg
 
 
