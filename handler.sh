@@ -39,7 +39,7 @@ main() {
         [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
         read_config "${_SCRIPTCONF}/${script}.conf" && {
           for dir in ${BACKUP_DIR}; do
-            run_script "${script} ${dir}"
+            run_script ${script} ${dir}
           done
         }
         unset_config "${_SCRIPTCONF}/${script}.conf"

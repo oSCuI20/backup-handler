@@ -11,10 +11,11 @@
 #                                    ARCHIVEROOT/hostname/mysql/YYYYMMDD/db1.sql.gz
 #                                    ARCHIVEROOT/hostname/mysql/YYYYMMDD/db2.sql.gz
 
+. ${_CONFIGDIR}/manager-functions
+
 
 main_backup() {
   /bin/echo ""
-  . ${_CONFIGDIR}/manager-functions
   checking_global_vars
   now=$(/bin/date +%Y%m%d)
 

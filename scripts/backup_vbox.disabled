@@ -11,10 +11,11 @@
 #                                    ARCHIVEROOT/hostname/vbox/YYYYMMDD/vbox01.tar.gz
 #                                    ARCHIVEROOT/hostname/vbox/YYYYMMDD/vbox02.tar.gz
 
+. ${_CONFIGDIR}/manager-functions
+
 
 main_backup() {
   /bin/echo ""
-  . ${_CONFIGDIR}/manager-functions
   checking_global_vars
   now=$(/bin/date +%Y%m%d)
 

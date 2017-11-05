@@ -11,10 +11,11 @@
 #                                    ARCHIVEROOT/hostname/files/main
 #                                    ARCHIVEROOT/hostname/files/YYYYMMDD
 
+. ${_CONFIGDIR}/manager-functions
+
 
 main_backup() {
   /bin/echo ""
-  . ${_CONFIGDIR}/manager-functions
   checking_global_vars
   now=$(/bin/date +%Y%m%d)
 
