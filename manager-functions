@@ -3,7 +3,7 @@
 ## Logging functions
 _log_msg() {
 
-  ! ${_QUIET} || ${_DEBUG} && {
+  ! ${_QUIET} && {
     printf "$@"
   }
 
