@@ -193,7 +193,7 @@ parse_arguments() {
         _PIDFILE=$value
         ;;
       --only-*)
-        _EXEC=${key##*-}
+        _EXEC=${key/--only-/}
         ;;
       --help)
         print_usage
