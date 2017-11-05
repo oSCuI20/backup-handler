@@ -64,7 +64,7 @@ main_backup_server() {
 
 
 main_backup_client() {
-  sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+  sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
   _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${main}"
   connection=("${directory}/" "${SSH_USER}@${SSH_HOST}:${main}")
