@@ -142,11 +142,15 @@ load_fileconf() {
       var=${line//#*/}    #Remove comment in the line
       key=${var%=*}       #Extract var key
       value=${var#*=}     #Extract var value
-      export ${key}
+
+      if [ "${value}" != "" ]; then
+        export ${key}=${value}
+      else
+        export ${key}
+      fi
     }  #_is_not_comment "${line}"
   done  #for line in `/bin/cat ${_FILECONF}`
 
-  . ${1}
   enviroment=$(env)
 
   for req in ${require_vars[@]}; do
