@@ -53,7 +53,7 @@ main() {
         [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
         read_config "${_SCRIPTCONF}/${script}.conf" && {
           for h in ${SSH_HOST}; do
-            run_script "${script} ${h}"
+            run_script ${script} ${h}
           done
         }
         unset_config "${_SCRIPTCONF}/${script}.conf"

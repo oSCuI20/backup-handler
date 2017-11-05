@@ -131,7 +131,7 @@ checking_global_vars() {
 }  #checking_global_vars
 
 
-if [ -z "${1}" ] || [ ! -d "${1}" ]; then
+if [ -z "${1}" ]; then
   log_script_msg "Not exists arguments for the script. \$1 should a \
 directory for backup\n"
   exit 1
