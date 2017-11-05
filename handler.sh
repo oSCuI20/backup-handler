@@ -133,7 +133,7 @@ load_fileconf() {
   require_vars[5]="EMAIL"
 
   if [ ! -f "${1}" ]; then
-    log_failure_msg "Not found configuration file, ${1}"
+    printf "Not found configuration file, ${1}"
     exit 1
   fi
 
@@ -155,11 +155,10 @@ load_fileconf() {
 
   for req in ${require_vars[@]}; do
     if ! printf "${enviroment}" | /bin/grep -q "${req}="; then
-      log_failure_msg "Not exists enviroment var ${req}"
+      printf "Not exists enviroment var ${req}"
       exit 1
     fi  #if ! /bin/printf "${d}" | /bin/grep "${req}"
   done  #for req in ${require_vars[@]}
-  log_success_msg "Load ${1} file"
 }  #load_fileconf
 
 
