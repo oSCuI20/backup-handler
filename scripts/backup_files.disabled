@@ -46,7 +46,6 @@ main_backup_server() {
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
-    EMAILSUBJECT="${EMAILSUBJECT} Success"
     filepath="${increment}${directory/\//.}.tar.gz"
     [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment}
     [ -d ${increment} ] && /bin/rm -Rf ${increment}
@@ -57,7 +56,6 @@ main_backup_server() {
       log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
     fi
   else
-    EMAILSUBJECT="${EMAILSUBJECT} Failed"
     log_script_msg "Error: Cannot execute rsync\n"
   fi
 }  #main_backup_server
@@ -73,7 +71,6 @@ main_backup_client() {
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
-    EMAILSUBJECT="${EMAILSUBJECT} Success"
     filepath="${increment}${directory/\//.}.tar.gz"
     _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
                               /bin/tar -czf ${filepath} -C ${increment}; \
@@ -86,7 +83,6 @@ main_backup_client() {
       log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
     fi
   else
-    EMAILSUBJECT="${EMAILSUBJECT} Failed"
     log_script_msg "Error: Cannot execute rsync\n"
   fi
 }  #main_backup_client

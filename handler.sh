@@ -16,11 +16,6 @@ export _SCRIPTCONF
 export _LOGFILE
 export _PIDFILE
 
-_ORDER=
-_QUIET=true
-_DEBUG=false
-_EXEC="null"
-
 
 main() {
   parse_arguments "$@"
@@ -35,34 +30,61 @@ main() {
     ${BACKUP_FILES} && {
       for s in `/bin/ls -v ${_SCRIPTDIR}/backup_files-* 2> /dev/null`; do
         script=$(/usr/bin/basename ${s})
-        _LOGFILE="${_LOGDIR}/${script}_log"
-        [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
-        read_config "${_SCRIPTCONF}/${script}.conf" && {
-          for dir in ${BACKUP_DIR[@]}; do
-            run_script ${script} ${dir}
-          done
+        disabled=false
+        [ "${script: -9}" == ".disabled" ] && disabled=true
+
+        ! ${disabled} && {
+          _LOGFILE="${_LOGDIR}/${script}_log"
+          [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+          read_config "${_SCRIPTCONF}/${script}.conf" && {
+            for dir in ${BACKUP_DIR[@]}; do
+              run_script ${script} ${dir}
+            done
+          }
+          ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
+          unset_config "${_SCRIPTCONF}/${script}.conf"
         }
-        unset_config "${_SCRIPTCONF}/${script}.conf"
       done
     }  #${BACKUP_FILES}
 
     ${BACKUP_MYSQL} && {
       for s in `/bin/ls -v ${_SCRIPTDIR}/backup_mysql-* 2> /dev/null`; do
         script=$(/usr/bin/basename ${s})
-        _LOGFILE="${_LOGDIR}/${script}_log"
-        [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
-        read_config "${_SCRIPTCONF}/${script}.conf" && {
-          for h in ${SSH_HOST[@]}; do
-            run_script ${script} ${h}
-          done
+        disabled=false
+        [ "${script: -9}" == ".disabled" ] && disabled=true
+
+        ! ${disabled} && {
+          _LOGFILE="${_LOGDIR}/${script}_log"
+          [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+          read_config "${_SCRIPTCONF}/${script}.conf" && {
+            for h in ${SSH_HOST[@]}; do
+              run_script ${script} ${h}
+            done
+          }
+          ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
+          unset_config "${_SCRIPTCONF}/${script}.conf"
         }
-        unset_config "${_SCRIPTCONF}/${script}.conf"
       done
     }  #${BACKUP_MYSQL}
 
     ${BACKUP_VIRTUALBOX} && {
-      echo "exec backup virtual box"
-#      run_script "backup_vbox"
+      for s in `/bin/ls -v ${_SCRIPTDIR}/backup_vbox-* 2> /dev/null`; do
+        script=$(/usr/bin/basename ${s})
+        disabled=false
+        [ "${script: -9}" == ".disabled" ] && disabled=true
+
+        ! ${disabled} && {
+          _LOGFILE="${_LOGDIR}/${script}_log"
+          [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+          read_config "${_SCRIPTCONF}/${script}.conf" && {
+            for h in ${SSH_HOST[@]}; do
+              run_script ${script} ${h}
+            done
+          }
+          ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
+          unset_config "${_SCRIPTCONF}/${script}.conf"
+        }
+      done
     }  #${BACKUP_VIRTUALBOX}
 
     scripts_files=$(/bin/ls -v "${_SCRIPTDIR}")
@@ -81,6 +103,7 @@ main() {
         read_config "${script_conf_name}" && {
           run_script "${script_name}"
         }
+        ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
         unset_config "${script_conf_name}"
       } #! $disabled
     done  #for script_name in ${scripts_files}

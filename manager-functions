@@ -58,8 +58,7 @@ run_script() {
       subject="Warning - ${EMAILSUBJECT}"
     fi
   fi  # if [ ${#@} -eq 0 ]; then
-
-  ${EMAIL} && _send_email "${EMAILADDR}" "${subject}" "$_LOGFILE"
+  EMAILSUBJECT="${subject}"
 }  #run_script
 
 
