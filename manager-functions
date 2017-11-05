@@ -3,7 +3,7 @@
 ## Logging functions
 _log_msg() {
 
-  ${_QUIET} || ${DEBUG} && {
+  ! ${_QUIET} || ${DEBUG} && {
     printf "$@"
   }
 
@@ -16,7 +16,7 @@ _log_msg() {
 log_success_msg() { _log_msg "Success: $@\n"; }
 log_failure_msg() { _log_msg "Failure: $@\n"; }
 log_warning_msg() { _log_msg "Warning: $@\n"; }
-log_begin_msg() { _log_msg "Begin: $@ ... \n"; }
+log_begin_msg() { _log_msg "Begin: $@ ... "; }
 log_end_msg() { _log_msg "done\n"; }
 
 log_script_msg() {
