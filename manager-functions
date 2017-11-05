@@ -3,7 +3,7 @@
 ## Logging functions
 _log_msg() {
 
-  ${_QUIET} || ${EMAIL} && {
+  ${_QUIET} || ${DEBUG} && {
     printf "$@"
   }
 
@@ -23,10 +23,8 @@ log_script_msg() {
   IFS=$'\n'
   for line in $1; do
     printf " * ${line}\n"
-    ${EMAIL} && printf " * ${line}\n" >> "${_LOGFILE}"
   done
   printf "\n"
-  ${EMAIL} && printf "\n" >> "${_LOGFILE}"
 }  #log_script_msg
 
 
@@ -52,12 +50,12 @@ run_script() {
       else
         log_end_msg
       fi
-      log_script_msg "${output}"
     else
       log_warning_msg "Cannot execute ${run} check if file exists or permission"
       subject="Warning - ${EMAILSUBJECT}"
     fi
   fi  # if [ ${#@} -eq 0 ]; then
+  _log_msg "${output}"
   EMAILSUBJECT="${subject}"
 }  #run_script
 
