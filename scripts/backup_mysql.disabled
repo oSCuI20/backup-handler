@@ -25,7 +25,7 @@ main_backup() {
   sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
   EMAILSUBJECT="Backup MySQL ${HOSTNAME}"
-  log_script_msg "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+  printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
 
   db_ignore=${MYSQL_IGNORE}
   m_options="-h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASS -P ${MYSQL_PORT}"
@@ -35,7 +35,7 @@ main_backup() {
 
   ${SERVER} && main_backup_server || main_backup_client
 
-  log_script_msg "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+  printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
   exit ${retval}
 }  #main_backup
 
@@ -58,19 +58,19 @@ main_backup_server() {
       retval=$?
 
       if [ ${retval} -eq 0 ]; then
-        log_script_msg "Backup database ${db}\n"
+        printf "Backup database ${db}\n"
       else
-        log_script_msg "Error in database ${db}\n"
+        printf "Error in database ${db}\n"
       fi
     done  #for db in ${dbs}
     out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -type d -mtime +${DAYS} \
                                       -exec /bin/rm -vRf {} \;)
 
     if [ "${out}" != "" ]; then
-      log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
+      printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
   else
-    log_script_msg "Error: Cannot execute mysql\n${dbs}\n"
+    printf "Error: Cannot execute mysql\n${dbs}\n"
   fi
 }  #main_backup_server
 
@@ -92,9 +92,9 @@ main_backup_client() {
       retval=$?
 
       if [ ${retval} -eq 0 ]; then
-        log_script_msg "Backup database ${db}\n"
+        printf "Backup database ${db}\n"
       else
-        log_script_msg "Error in database ${db}\n"
+        printf "Error in database ${db}\n"
       fi
 
       /usr/bin/scp -P ${SSH_PORT} -i ${SSH_KEY} ${tmp_dir}/${db}.sql.gz \
@@ -105,55 +105,55 @@ main_backup_client() {
                           -mtime +${DAYS} -exec /bin/rm -vRf {} \;")
 
     if [ "${out}" != "" ]; then
-      log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
+      printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
   else
-    log_script_msg "Error: Cannot execute mysql\n${dbs}\n"
+    printf "Error: Cannot execute mysql\n${dbs}\n"
   fi
 }  #main_backup_client
 
 
 checking_global_vars() {
   if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
-    log_script_msg "SSH_HOST not defined\n"
+    printf "SSH_HOST not defined\n"
     exit 1
   fi
 
   if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    log_script_msg "SSH_USER not defined\n"
+    printf "SSH_USER not defined\n"
     exit 1
   fi
 
   if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
      [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
-    log_script_msg "SSH_PORT not defined or value is not numeric\n"
+    printf "SSH_PORT not defined or value is not numeric\n"
     exit 1
   fi
 
   if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
      [ ! -f "${SSH_KEY}" ]; then
-    log_script_msg "SSH_KEY not defined or file not exists\n"
+    printf "SSH_KEY not defined or file not exists\n"
     exit 1
   fi
 
   if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    log_script_msg "SSH_USER not defined"
+    printf "SSH_USER not defined"
     exit 1
   fi
 
   if [ -z "${MYSQL_USER}" ] || [ "${MYSQL_USER}" == "" ]; then
-    log_script_msg "MYSQL_USER not defined"
+    printf "MYSQL_USER not defined"
     exit 1
   fi
 
   if [ -z "${MYSQL_PASS}" ] || [ "${MYSQL_PASS}" == "" ]; then
-    log_script_msg "MYSQL_PASS not defined"
+    printf "MYSQL_PASS not defined"
     exit 1
   fi
 
   if [ -z "${MYSQL_PORT}" ] || [ "${MYSQL_PORT}" == "" ] || \
      [[ ! "${MYSQL_PORT}" =~ [0-9]+ ]]; then
-    log_script_msg "MYSQL_PORT not defined or value is not numeric\n"
+    printf "MYSQL_PORT not defined or value is not numeric\n"
     exit 1
   fi
 
@@ -173,7 +173,7 @@ checking_global_vars() {
 
 
 if [ -z "${1}" ]; then
-  log_script_msg "Not exists arguments for the script. \$1 should a \
+  printf "Not exists arguments for the script. \$1 should a \
 ip address of ssh or domain name\n"
   exit 1
 fi

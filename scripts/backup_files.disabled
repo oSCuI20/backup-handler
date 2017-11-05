@@ -28,12 +28,12 @@ main_backup() {
                  "--backup" "--backup-dir=${increment}" "-azh")
 
   EMAILSUBJECT="Backup Files ${HOSTNAME} - ${directory}"
-  log_script_msg "Starting backup, ${directory} at `/bin/date`\n"
+  printf "Starting backup, ${directory} at `/bin/date`\n"
 
   export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
   ${SERVER} && main_backup_server || main_backup_client
 
-  log_script_msg "Finish backup, ${directory} at `/bin/date`\n"
+  printf "Finish backup, ${directory} at `/bin/date`\n"
   exit ${retval}
 }  #main_backup
 
@@ -53,10 +53,10 @@ main_backup_server() {
                                   -exec /bin/rm -vRf {} \;)
 
     if [ "${out}" != "" ]; then
-      log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
+      printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
   else
-    log_script_msg "Error: Cannot execute rsync\n"
+    printf "Error: Cannot execute rsync\n"
   fi
 }  #main_backup_server
 
@@ -80,39 +80,39 @@ main_backup_client() {
           -maxdepth 1 -name 2*.tar.gz -mtime +${DAYS} -exec /bin/rm -vRf {} \;")
 
     if [ "${out}" != "" ]; then
-      log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
+      printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
   else
-    log_script_msg "Error: Cannot execute rsync\n"
+    printf "Error: Cannot execute rsync\n"
   fi
 }  #main_backup_client
 
 
 checking_global_vars() {
   if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
-    log_script_msg "SSH_HOST not defined\n"
+    printf "SSH_HOST not defined\n"
     exit 1
   fi
 
   if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    log_script_msg "SSH_USER not defined\n"
+    printf "SSH_USER not defined\n"
     exit 1
   fi
 
   if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
      [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
-    log_script_msg "SSH_PORT not defined or value is not numeric\n"
+    printf "SSH_PORT not defined or value is not numeric\n"
     exit 1
   fi
 
   if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
      [ ! -f "${SSH_KEY}" ]; then
-    log_script_msg "SSH_KEY not defined or file not exists\n"
+    printf "SSH_KEY not defined or file not exists\n"
     exit 1
   fi
 
   if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    log_script_msg "SSH_USER not defined"
+    printf "SSH_USER not defined"
     exit 1
   fi
 
@@ -128,8 +128,8 @@ checking_global_vars() {
 
 
 if [ -z "${1}" ]; then
-  log_script_msg "Not exists arguments for the script. \$1 should a \
-directory for backup\n"
+  printf "Not exists arguments for the script. \$1 should a directory for \
+backup\n"
   exit 1
 fi
 directory="${1}"

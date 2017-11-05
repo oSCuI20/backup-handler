@@ -29,11 +29,11 @@ main_backup() {
   sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
   EMAILSUBJECT="Backup VBox ${HOSTNAME}"
-  log_script_msg "Starting VBox backup, at `/bin/date`\n"
+  printf "Starting VBox backup, at `/bin/date`\n"
 
   ${SERVER} && main_backup_server || main_backup_client
 
-  log_script_msg "Finish VBox backup, at `/bin/date`\n"
+  printf "Finish VBox backup, at `/bin/date`\n"
   exit ${retval}
 }  #main_backup
 
@@ -55,9 +55,9 @@ main_backup_server() {
       retval=$?
 
       if [ ${retval} -eq 0 ]; then
-        log_script_msg "VM backup successful - ${vm}\n"
+        printf "VM backup successful - ${vm}\n"
       else
-        log_script_msg "Error when trying compress a vm - ${vm}\n"
+        printf "Error when trying compress a vm - ${vm}\n"
       fi
 
       _ssh_exec ${sshauth} --cmd="/bin/su -l vbox -c
@@ -65,21 +65,21 @@ main_backup_server() {
       retval=$?
 
       if [ ${retval} -eq 0 ]; then
-        log_script_msg "VM started sucessful - ${vm}\n"
+        printf "VM started sucessful - ${vm}\n"
       else
-        log_script_msg "Error when trying start a vm - ${vm}\n"
+        printf "Error when trying start a vm - ${vm}\n"
       fi
     else
-      log_script_msg "Error the vm ${vm} is running or not exists\n"
+      printf "Error the vm ${vm} is running or not exists\n"
     fi
   done  #for vm in ${VBOX_VM[@]}
 
   if [ ${retval} -eq 0 ]; then
     old_files=$(/usr/bin/find ${backup_dir} -maxdepth 1 -type d \
                                                     -exec /bin/rm -Rvf {} \;)
-    log_script_msg "Remove old backups\n${old_files}\n"
+    printf "Remove old backups\n${old_files}\n"
   else
-    log_script_msg "Skip remove old backups\n"
+    printf "Skip remove old backups\n"
   fi
 }  #main_backup_server
 
@@ -100,21 +100,21 @@ main_backup_client() {
       retval=$?
 
       if [ ${retval} -eq 0 ]; then
-        log_script_msg "VM backup successful - ${vm}\n"
+        printf "VM backup successful - ${vm}\n"
       else
-        log_script_msg "Error when trying compress a vm - ${vm}\n"
+        printf "Error when trying compress a vm - ${vm}\n"
       fi
 
       /bin/su -l vbox -c "/usr/bin/VBoxManage startvm ${vm} --type headless"
       retval=$?
 
       if [ ${retval} -eq 0 ]; then
-        log_script_msg "VM started sucessful - ${vm}\n"
+        printf "VM started sucessful - ${vm}\n"
       else
-        log_script_msg "Error when trying start a vm - ${vm}\n"
+        printf "Error when trying start a vm - ${vm}\n"
       fi
     else
-      log_script_msg "Error, the vm ${vm} is running or not exists\n"
+      printf "Error, the vm ${vm} is running or not exists\n"
     fi
   done  #for vm in ${VBOX_VM[@]}
 }  #main_backup_client
@@ -122,39 +122,39 @@ main_backup_client() {
 
 checking_global_vars() {
   if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
-    log_script_msg "SSH_HOST not defined\n"
+    printf "SSH_HOST not defined\n"
     exit 1
   fi
 
   if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    log_script_msg "SSH_USER not defined\n"
+    printf "SSH_USER not defined\n"
     exit 1
   fi
 
   if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
      [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
-    log_script_msg "SSH_PORT not defined or value is not numeric\n"
+    printf "SSH_PORT not defined or value is not numeric\n"
     exit 1
   fi
 
   if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
      [ ! -f "${SSH_KEY}" ]; then
-    log_script_msg "SSH_KEY not defined or file not exists\n"
+    printf "SSH_KEY not defined or file not exists\n"
     exit 1
   fi
 
   if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    log_script_msg "SSH_USER not defined"
+    printf "SSH_USER not defined"
     exit 1
   fi
 
   if [ -z "${VBOX_VM}" ] || [ "${VBOX_VM}" == "" ]; then
-    log_script_msg "VBOX_VM not defined\n"
+    printf "VBOX_VM not defined\n"
     exit 1
   fi
 
   if [ -z "${VBOX_PATH}" ] || [ "${VBOX_PATH}" == "" ]; then
-    log_script_msg "VBOX_PATH not defined\n"
+    printf "VBOX_PATH not defined\n"
     exit 1
   fi
 
@@ -170,7 +170,7 @@ checking_global_vars() {
 
 
 if [ -z "${1}" ]; then
-  log_script_msg "Not exists arguments for the script. \$1 should a \
+  printf "Not exists arguments for the script. \$1 should a \
 ip address of ssh or domain name\n"
   exit 1
 fi
