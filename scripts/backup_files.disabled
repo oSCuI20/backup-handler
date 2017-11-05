@@ -1,0 +1,140 @@
+#!/bin/bash
+#
+# Eduardo Banderas Alba
+# $1 backup directory
+#
+# path backups if execute as server: ARCHIVEROOT/SSH_HOST/files
+#                                    ARCHIVEROOT/SSH_HOST/files/main
+#                                    ARCHIVEROOT/SSH_HOST/files/YYYYMMDD
+#
+# path backups if execute as client: ARCHIVEROOT/hostname/files
+#                                    ARCHIVEROOT/hostname/files/main
+#                                    ARCHIVEROOT/hostname/files/YYYYMMDD
+
+
+main_backup() {
+  /bin/echo ""
+  . ${_CONFIGDIR}/manager-functions
+  checking_global_vars
+  now=$(/bin/date +%Y%m%d)
+
+  ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
+
+  backup_dir="${ARCHIVEROOT}/${HOSTNAME}/files"
+  main="${backup_dir}/main${directory}"
+  increment="${backup_dir}/${now}"
+  rsync_options="--force --ignore-errors --delete \
+                 --backup --backup-dir=${increment} -aczh"
+
+  EMAILSUBJECT="Backup Files ${HOSTNAME} - ${directory}"
+  log_script_msg "Starting backup, ${directory} at `/bin/date`\n"
+
+  export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
+  ${SERVER} && main_backup_server || main_backup_client
+
+  log_script_msg "Finish backup, ${directory} at `/bin/date`\n"
+  exit ${retval}
+}  #main_backup
+
+
+main_backup_server() {
+  /bin/mkdir -p ${main}
+  connection="${SSH_USER}@${SSH_HOST}:${directory}/ ${main}"
+
+  /usr/bin/rsync ${rsync_opt} ${connection}
+  retval=$?
+
+  if [ ${retval} -eq 0 ]; then
+    EMAILSUBJECT="${EMAILSUBJECT} Success"
+    filepath="${increment}.tar.gz"
+    [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment}
+    [ -d ${increment} ] && /bin/rm -Rf ${increment}
+    out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
+                                  -exec /bin/rm -vRf {} \;)
+
+    if [ "${out}" != "" ]; then
+      log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
+    fi
+  else
+    EMAILSUBJECT="${EMAILSUBJECT} Failed"
+    log_script_msg "Error: Cannot execute rsync\n"
+  fi
+}  #main_backup_server
+
+
+main_backup_client() {
+  sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+
+  _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${main}"
+  connection="${directory}/ ${SSH_USER}@${SSH_HOST}:${main}"
+
+  /usr/bin/rsync ${rsync_opt} ${connection}
+  retval=$?
+
+  if [ ${retval} -eq 0 ]; then
+    EMAILSUBJECT="${EMAILSUBJECT} Success"
+    filepath="${increment}.tar.gz"
+    _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
+                              /bin/tar -czf ${filepath} -C ${increment}; \
+                              [ -d ${increment} ] && /bin/rm -Rf ${increment}"
+
+    out=$(_ssh_exec ${sshauth} --cmd="/bin/find ${ARCHIVEROOT} \
+          -maxdepth 1 -name 2*.tar.gz -mtime +${DAYS} -exec /bin/rm -vRf {} \;")
+
+    if [ "${out}" != "" ]; then
+      log_script_msg "Remove backups higher than ${DAYS}\n${out}\n"
+    fi
+  else
+    EMAILSUBJECT="${EMAILSUBJECT} Failed"
+    log_script_msg "Error: Cannot execute rsync\n"
+  fi
+}  #main_backup_client
+
+
+checking_global_vars() {
+  if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
+    log_script_msg "SSH_HOST not defined\n"
+    exit 1
+  fi
+
+  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
+    log_script_msg "SSH_USER not defined\n"
+    exit 1
+  fi
+
+  if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
+     [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
+    log_script_msg "SSH_PORT not defined or value is not numeric\n"
+    exit 1
+  fi
+
+  if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
+     [ ! -f "${SSH_KEY}" ]; then
+    log_script_msg "SSH_KEY not defined or file not exists\n"
+    exit 1
+  fi
+
+  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
+    log_script_msg "SSH_USER not defined"
+    exit 1
+  fi
+
+  if [ -z "${TEMPDIR}" ] || [ "${TEMPDIR}" == "" ] || \
+     [ ! -d "${TEMPDIR}" ]; then
+    TEMPDIR=/var/tmp
+  fi
+
+  if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
+    DAYS=25
+  fi
+}  #checking_global_vars
+
+
+if [ -z "${1}" ] || [ ! -d "${1}" ]; then
+  log_script_msg "Not exists arguments for the script. \$1 should a \
+directory for backup\n"
+  exit 1
+fi
+directory="${1}"
+
+main_backup

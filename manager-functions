@@ -1,0 +1,223 @@
+# Utils for handler.sh
+
+## Logging functions
+_log_msg() {
+
+  if ${_QUIET} || ${_DEBUG}; then
+    printf "$@"
+  fi
+
+  if ${_DEBUG}; then
+    printf "$@" >> "${_LOGFILE}"
+  fi
+}  #_log_msg
+
+
+log_success_msg() { _log_msg "Success: $@\n"; }
+log_failure_msg() { _log_msg "Failure: $@\n"; }
+log_warning_msg() { _log_msg "Warning: $@\n"; }
+log_begin_msg() { _log_msg "Begin: $@ ... "; }
+log_end_msg() { _log_msg "done\n"; }
+
+log_script_msg() {
+  IFS=$'\n'
+  for line in $1; do
+    /usr/bin/printf " * ${line}\n"
+  done
+  /usr/bin/printf "\n"
+}  #log_script_msg
+
+
+run_script() {
+  if [ $# -eq 0 ]; then
+    log_failure_msg "Function require arguments, \$1 should be a script name \
+\$2 are the params of script"
+    subject="Failed - ${EMAILSUBJECT}"
+  else
+    run="${_SCRIPTDIR}/${1}"
+    retval=0
+    subject="Success - ${EMAILSUBJECT}"
+
+    if [ -x "${run}" ] && [ -f "${run}" ]; then
+      log_begin_msg "Execute ${run}"
+      output=$(${run} ${2})
+      retval=$?
+
+      if [ ${retval} -gt 0 ]; then
+        log_end_msg
+        log_failure_msg "The script ${run} failed with return code ${retval}"
+        subject="Failed - ${EMAILSUBJECT}"
+      else
+        log_end_msg
+      fi
+      log_script_msg "${output}"
+    else
+      log_warning_msg "Cannot execute ${run} check if file exists or permission"
+      subject="Warning - ${EMAILSUBJECT}"
+    fi
+  fi  # if [ ${#@} -eq 0 ]; then
+
+  ${EMAIL} && _send_email "${EMAILADDR}" "${subject}" "$_LOGFILE"
+}  #run_script
+
+
+read_config() {
+  if [ ! -f "${1}" ]; then
+    log_warning_msg "Not found configuration file, ${1}"
+    return 0
+  fi
+
+  IFS=$'\n'
+  for line in `/bin/cat ${1}`; do
+    _is_not_comment "${line}" && {
+      var=${line//#*/}    #Remove comment in the line
+      key=${var%=*}       #Extract var key
+      value=${var#*=}     #Extract var value
+
+      if [ "${key}" == "EMAIL" ]; then
+        if [ "${value}" != "true" ] && [ "${value}" != "false" ]; then
+          log_failure_msg "EMAIL key should be true or false"
+          return 1
+        fi
+      fi
+      if [ "${key}" == "SERVER" ]; then
+        if [ "${value}" != "true" ] && [ "${value}" != "false" ]; then
+          log_failure_msg "SERVER key should be true or false"
+          return 1
+        fi
+      fi
+      export ${key}
+    }  #_is_not_comment "${line}"
+  done
+
+  . "${1}"
+  log_success_msg "Load configuration file"
+  return 0
+}  #read_config
+
+
+unset_config() {
+  if [ -f "${1}" ]; then
+    IFS=$'\n'
+    for line in `/bin/cat ${1}`; do
+      if _is_not_comment "$line"; then
+        unset ${line%=*}
+      fi
+    done
+  fi
+}  #unset_config
+
+
+_is_not_comment() {
+  if [ "${1: 0:1}" == "#" ]; then
+    return 1
+  fi
+  return 0
+}  #_is_not_comment
+
+
+_locked() {
+  [ ! -d "${_PIDFILE%/*}" ] && /bin/mkdir -p "${_PIDFILE%/*}"
+  [ ! -f "${_PIDFILE}" ] && /bin/touch "${_PIDFILE}"
+  local pid=$(/bin/cat "${_PIDFILE}")
+  local process=$(/bin/ps ax -o pid,comm)
+  local retval=0
+
+  if /usr/bin/printf "${process}" | /bin/grep -q "${pid}" && \
+     [ -n "${pid}" ]; then
+    log_failure_msg "Found a proccess ${pid}"
+    exit 1
+  fi
+
+  /bin/echo $$ > "${_PIDFILE}"
+}  #_locked
+
+
+_send_email() {
+  #_send_email "email_addr" "subject" "Message" "email_cc"
+  local email_to="$1"
+  local subject="$2"
+  local message="$3"
+  local email_cc="$4"
+  local email_from="backup@`/bin/hostname -f`"
+  {
+    /bin/printf "From: ${email_from}\n"
+    /bin/printf "To: ${email_to}\n"
+    [ -n "${email_cc}" ] && /bin/printf "CC: ${email_cc}\n"
+    /bin/printf "Subject: ${subject}\n"
+    /bin/printf "X-Mailer: Backup\n"
+    /bin/printf "MIME-Version: 1.0\n"
+    /bin/printf "Content-Transfer-Encoding: 8bit\n"
+    /bin/printf "Content-Type: text/plain; charset=UTF-8\n"
+    /bin/echo ""
+    /bin/cat "${message}"
+  } | /usr/sbin/sendmail -oi -t
+}  #_send_email
+
+
+_clean_all() {
+  unset _CONFIGDIR
+  unset _FILECONF
+  unset _SCRIPTDIR
+  unset _ORDER
+  unset _QUIET
+  unset _LOGDIR
+  unset _DEBUG
+  unset _EXEC
+  unset _SCRIPTCONF
+  unset _LOGFILE
+  unset _PIDFILE
+}  #clean_all
+
+
+remove_last_backslash() {
+  if [ "${1: -1}" == "/" ]; then
+    printf "${1:0:((${#1}-1))}"
+  else
+    printf "$1"
+  fi
+}  #remove_last_backslash
+
+
+_ssh_exec() {
+  ##  _ssh_exec(). Execute remote command.
+  ##  Params => --host=, --user=, --keyfile=, --cmd=
+  local retval=0
+  while [ $# -ge 1 ]; do
+    local key=$1
+    case $key in
+      --host=*)
+        local host="${key#*=}"
+        ;;
+      --user=*)
+        local user="${key#*=}"
+        ;;
+      --keyfile=*)
+        local keyfile="${key#*=}"
+        ;;
+      --port=*)
+        local port=${key#*=}
+        ;;
+      --cmd=*)
+        local cmd="${key#*=}"
+        ;;
+    esac
+    shift
+  done
+
+  [ "${port}" == "" ] && local port=22
+  if [ "${user}" == "" ]; then
+    local user=$(/usr/bin/id -un)
+    /usr/bin/printf "Use default user => ${user}\n"
+  fi
+  if [ "${host}" == "" ]; then
+    /usr/bin/printf "Error host not defined. Coming out of program\n"
+    exit 1
+  fi
+  if [ "${keyfile}" == "" ] || [ ! -f "${keyfile}" ]; then
+    /usr/bin/printf "Error keyfile not defined. Coming out of program\n"
+    exit 1
+  fi
+
+  /usr/bin/ssh -i "${keyfile}" -p ${port} ${user}@${host} "${cmd}"
+}  #_ssh_exec
