@@ -3,13 +3,13 @@
 ## Logging functions
 _log_msg() {
 
-  if ${_QUIET} || ${_DEBUG}; then
+  ${_QUIET} || ${EMAIL} && {
     printf "$@"
-  fi
+  }
 
-  if ${_DEBUG}; then
+  ${EMAIL} && {
     printf "$@" >> "${_LOGFILE}"
-  fi
+  }
 }  #_log_msg
 
 
@@ -22,9 +22,11 @@ log_end_msg() { _log_msg "done\n"; }
 log_script_msg() {
   IFS=$'\n'
   for line in $1; do
-    /usr/bin/printf " * ${line}\n"
+    printf " * ${line}\n"
+    ${EMAIL} && printf " * ${line}\n" >> "${_LOGFILE}"
   done
-  /usr/bin/printf "\n"
+  printf "\n"
+  ${EMAIL} && printf " * ${line}\n" >> "${_LOGFILE}"
 }  #log_script_msg
 
 
