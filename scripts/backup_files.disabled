@@ -27,7 +27,7 @@ main_backup() {
   rsync_options=("--force" "--ignore-errors" "--delete" \
                  "--backup" "--backup-dir=${increment}" "-azh")
 
-  printf "Starting backup, ${directory} at `/bin/date`\n"
+  printf "Starting backup files, ${directory} at `/bin/date`\n"
 
   export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
   ${SERVER} && main_backup_server || main_backup_client

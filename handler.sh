@@ -37,6 +37,7 @@ main() {
         ! ${disabled} && {
           _LOGFILE="${_LOGDIR}/${script}_log"
           [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+
           read_config "${_SCRIPTCONF}/${script}.conf" && {
             ${SERVER} && HOSTNAME="$SSH_HOST" || HOSTNAME="$(/bin/hostname -f)"
             for dir in ${BACKUP_DIR[@]}; do
@@ -59,8 +60,10 @@ main() {
         ! ${disabled} && {
           _LOGFILE="${_LOGDIR}/${script}_log"
           [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+
           read_config "${_SCRIPTCONF}/${script}.conf" && {
             for h in ${SSH_HOST[@]}; do
+                EMAILSUBJECT="Backup MySQL"
               run_script ${script} ${h}
             done
           }
@@ -79,8 +82,10 @@ main() {
         ! ${disabled} && {
           _LOGFILE="${_LOGDIR}/${script}_log"
           [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+
           read_config "${_SCRIPTCONF}/${script}.conf" && {
             for h in ${SSH_HOST[@]}; do
+              EMAILSUBJECT="Backup VBox"
               run_script ${script} ${h}
             done
           }

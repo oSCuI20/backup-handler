@@ -24,7 +24,6 @@ main_backup() {
   backup_dir="${ARCHIVEROOT}/${HOSTNAME}/mysql"
   sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
-  EMAILSUBJECT="Backup MySQL ${HOSTNAME}"
   printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
 
   db_ignore=${MYSQL_IGNORE}

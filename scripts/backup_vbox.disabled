@@ -28,7 +28,6 @@ main_backup() {
   storage="${backup_dir}/${now}"
   sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
-  EMAILSUBJECT="Backup VBox ${HOSTNAME}"
   printf "Starting VBox backup, at `/bin/date`\n"
 
   ${SERVER} && main_backup_server || main_backup_client
