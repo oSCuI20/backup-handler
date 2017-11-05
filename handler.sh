@@ -38,7 +38,7 @@ main() {
         _LOGFILE="${_LOGDIR}/${script}_log"
         [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
         read_config "${_SCRIPTCONF}/${script}.conf" && {
-          for dir in ${BACKUP_DIR}; do
+          for dir in ${BACKUP_DIR[@]}; do
             run_script ${script} ${dir}
           done
         }
@@ -52,7 +52,7 @@ main() {
         _LOGFILE="${_LOGDIR}/${script}_log"
         [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
         read_config "${_SCRIPTCONF}/${script}.conf" && {
-          for h in ${SSH_HOST}; do
+          for h in ${SSH_HOST[@]}; do
             run_script ${script} ${h}
           done
         }
@@ -74,6 +74,7 @@ main() {
       fi
 
       ! ${disabled} && {
+        #Execute custom script
         _LOGFILE="${_LOGDIR}/${script_name}_log"
         script_conf_name="${_SCRIPTCONF}/${script_name}.conf"
         [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
