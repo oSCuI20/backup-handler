@@ -42,7 +42,7 @@ main_backup_server() {
   /bin/mkdir -p ${main}
   connection="${SSH_USER}@${SSH_HOST}:${directory}/ ${main}"
 
-  /usr/bin/rsync ${rsync_opt} ${connection}
+  /usr/bin/rsync ${rsync_options} ${connection}
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
@@ -69,7 +69,7 @@ main_backup_client() {
   _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${main}"
   connection="${directory}/ ${SSH_USER}@${SSH_HOST}:${main}"
 
-  /usr/bin/rsync ${rsync_opt} ${connection}
+  /usr/bin/rsync ${rsync_options} ${connection}
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
