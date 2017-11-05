@@ -24,8 +24,8 @@ main_backup() {
   backup_dir="${ARCHIVEROOT}/${HOSTNAME}/files"
   main="${backup_dir}/main${directory}"
   increment="${backup_dir}/${now}"
-  rsync_options="--force --ignore-errors --delete \
-                 --backup --backup-dir=${increment} -azh"
+  rsync_options=("--force" "--ignore-errors" "--delete" \
+                 "--backup" "--backup-dir=${increment}" "-azh")
 
   EMAILSUBJECT="Backup Files ${HOSTNAME} - ${directory}"
   log_script_msg "Starting backup, ${directory} at `/bin/date`\n"
@@ -40,14 +40,14 @@ main_backup() {
 
 main_backup_server() {
   /bin/mkdir -p ${main}
-  connection="${SSH_USER}@${SSH_HOST}:${directory}/ ${main}"
+  connection=("${SSH_USER}@${SSH_HOST}:${directory}/" "${main}")
 
-  /usr/bin/rsync ${rsync_options} ${connection}
+  /usr/bin/rsync "${rsync_options[@]}" "${connection[@]}"
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
     EMAILSUBJECT="${EMAILSUBJECT} Success"
-    filepath="${increment}.tar.gz"
+    filepath="${increment}${directory/\//.}.tar.gz"
     [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment}
     [ -d ${increment} ] && /bin/rm -Rf ${increment}
     out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
@@ -67,14 +67,14 @@ main_backup_client() {
   sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
   _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${main}"
-  connection="${directory}/ ${SSH_USER}@${SSH_HOST}:${main}"
+  connection=("${directory}/" "${SSH_USER}@${SSH_HOST}:${main}")
 
-  /usr/bin/rsync ${rsync_options} ${connection}
+  /usr/bin/rsync "${rsync_options[@]}" "${connection[@]}"
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
     EMAILSUBJECT="${EMAILSUBJECT} Success"
-    filepath="${increment}.tar.gz"
+    filepath="${increment}${directory/\//.}.tar.gz"
     _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
                               /bin/tar -czf ${filepath} -C ${increment}; \
                               [ -d ${increment} ] && /bin/rm -Rf ${increment}"

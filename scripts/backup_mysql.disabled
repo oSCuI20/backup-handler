@@ -33,7 +33,6 @@ main_backup() {
   g_options="--best --force --quiet"
   storage="${backup_dir}/${now}"
 
-  export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
   ${SERVER} && main_backup_server || main_backup_client
 
   log_script_msg "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
