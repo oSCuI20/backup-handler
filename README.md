@@ -12,8 +12,8 @@ Usage:
   * --debug options not implement
 
 Configure the environment:
-You can configure the environment in `server` mode or `client` mode
-  Main configuration file is ./manager.conf
+You can configure the environment in `server` mode or `client` mode.
+Main configuration file is ./manager.conf
 
     SERVER=false            #Set true if you execute the scripts in backup server or false if is a client
 
