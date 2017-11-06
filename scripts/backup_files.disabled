@@ -46,7 +46,7 @@ main_backup_server() {
 
   if [ ${retval} -eq 0 ]; then
     filepath="${increment}${directory/\//.}.tar.gz"
-    [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment}
+    [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment} .
     [ -d ${increment} ] && /bin/rm -Rf ${increment}
     out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
                                   -exec /bin/rm -vRf {} \;)
@@ -72,7 +72,7 @@ main_backup_client() {
   if [ ${retval} -eq 0 ]; then
     filepath="${increment}${directory/\//.}.tar.gz"
     _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
-                              /bin/tar -czf ${filepath} -C ${increment}; \
+                              /bin/tar -czf ${filepath} -C ${increment} .; \
                               [ -d ${increment} ] && /bin/rm -Rf ${increment}"
 
     out=$(_ssh_exec ${sshauth} --cmd="/bin/find ${ARCHIVEROOT} \
