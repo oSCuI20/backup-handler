@@ -45,7 +45,7 @@ main_backup_server() {
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
-    filepath="${increment}${directory/\//.}.tar.gz"
+    filepath="${increment}${directory//\//.}.tar.gz"
     [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment} .
     [ -d ${increment} ] && /bin/rm -Rf ${increment}
     out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
