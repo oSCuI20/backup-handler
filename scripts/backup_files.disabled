@@ -10,6 +10,13 @@
 # path backups if execute as client: ARCHIVEROOT/hostname/files
 #                                    ARCHIVEROOT/hostname/files/main
 #                                    ARCHIVEROOT/hostname/files/YYYYMMDD
+#
+# The script use rsync tools for backups
+
+if [ -x /usr/bin/rsync ]; then
+  printf "Rsync tool is needed\n"
+  exit 1
+fi
 
 . ${_CONFIGDIR}/manager-functions
 
