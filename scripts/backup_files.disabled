@@ -13,11 +13,6 @@
 #
 # The script use rsync tools for backups
 
-if [ -x /usr/bin/rsync ]; then
-  printf "Rsync tool is needed\n"
-  exit 1
-fi
-
 . ${_CONFIGDIR}/manager-functions
 
 
@@ -137,6 +132,10 @@ checking_global_vars() {
   fi
 }  #checking_global_vars
 
+if [ ! -f /usr/bin/rsync ] || [ ! -x /usr/bin/rsync ]; then
+  printf "Rsync tool is needed\n"
+  exit 1
+fi
 
 if [ -z "${1}" ]; then
   printf "Not exists arguments for the script. \$1 should a directory for \
