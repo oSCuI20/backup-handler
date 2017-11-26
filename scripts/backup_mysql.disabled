@@ -3,13 +3,13 @@
 # Eduardo Banderas Alba
 # $1=SSH_HOST
 #
-# path backups if execute as server: ARCHIVEROOT/SSH_HOST/mysql
-#                                    ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db1.sql.gz
-#                                    ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db2.sql.gz
+# path backups as server: ARCHIVEROOT/SSH_HOST/mysql
+#                         ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db1.sql.gz
+#                         ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db2.sql.gz
 #
-# path backups if execute as client: ARCHIVEROOT/hostname/mysql
-#                                    ARCHIVEROOT/hostname/mysql/YYYYMMDD/db1.sql.gz
-#                                    ARCHIVEROOT/hostname/mysql/YYYYMMDD/db2.sql.gz
+# path backups as client: ARCHIVEROOT/hostname/mysql
+#                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db1.sql.gz
+#                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db2.sql.gz
 
 . ${_CONFIGDIR}/manager-functions
 
@@ -43,7 +43,7 @@ main_backup_server() {
   /bin/mkdir -p ${storage}
 
   dbs=$(_ssh_exec ${sshauth} \
-                        --cmd="/usr/bin/mysql ${m_options} -e 'SHOW DATABASES'")
+                    --cmd="/usr/bin/mysql -N ${m_options} -e 'SHOW DATABASES'")
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
@@ -78,7 +78,7 @@ main_backup_client() {
   _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${storage}"
   tmp_dir="${TEMPDIR}/${now}"
 
-  dbs=$(/usr/bin/mysql ${m_options} -e 'SHOW DATABASES')
+  dbs=$(/usr/bin/mysql -N ${m_options} -e 'SHOW DATABASES')
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
