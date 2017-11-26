@@ -61,6 +61,8 @@ main_backup_server() {
     if [ "${out}" != "" ]; then
       printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
+
+    /bin/du -sh ${backup_dir}
   else
     printf "Error: Cannot execute rsync\n"
   fi
@@ -82,12 +84,15 @@ main_backup_client() {
                               /bin/tar -czf ${filepath} -C ${increment} .; \
                               [ -d ${increment} ] && /bin/rm -Rf ${increment}"
 
-    out=$(_ssh_exec ${sshauth} --cmd="/bin/find ${ARCHIVEROOT} \
+    out=$(_ssh_exec ${sshauth} --cmd="/bin/find ${backup_dir} \
           -maxdepth 1 -name 2*.tar.gz -mtime +${DAYS} -exec /bin/rm -vRf {} \;")
 
     if [ "${out}" != "" ]; then
       printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
+
+    out=$(_ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}")
+    printf "${out}\n"
   else
     printf "Error: Cannot execute rsync\n"
   fi
