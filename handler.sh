@@ -2,7 +2,7 @@
 #
 # Eduardo Banderas Alba
 # Event handler
-# ./event-handler.sh
+# ./handler.sh
 
 export _CONFIGDIR
 export _FILECONF
