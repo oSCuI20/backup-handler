@@ -46,7 +46,7 @@ main_backup_server() {
                               /bin/grep -q running" 2> /dev/null
     retval=$?
 
-    if [ ${retval} -eq 0 ]; then
+    if [ ${retval} -eq 1 ]; then
       backup_vm="${VBOX_PATH}/${vm}"
       filepath="${storage}/${vm}.tar.gz"
       _ssh_exec $sshauth \
