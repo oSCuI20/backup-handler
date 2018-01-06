@@ -75,7 +75,7 @@ main_backup_server() {
 
   if [ ${retval} -eq 0 ]; then
     old_files=$(/usr/bin/find ${backup_dir} -maxdepth 1 -type d \
-                                                    -exec /bin/rm -Rvf {} \;)
+                                      -mtime +${DAYS} -exec /bin/rm -Rvf {} \;)
     printf "Remove old backups\n${old_files}\n"
   else
     printf "Skip remove old backups\n"
