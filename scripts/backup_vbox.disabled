@@ -39,16 +39,19 @@ main_backup() {
 
 main_backup_server() {
   /bin/mkdir -p ${storage}
+  error=false
 
   for vm in ${VBOX_VM[@]}; do
+    printf "$vm\n"
     _ssh_exec ${sshauth} --cmd="/bin/su -l vbox -c \
                             \"/usr/bin/VBoxManage showvminfo ${vm}\" | \
                               /bin/grep -q running" 2> /dev/null
     retval=$?
 
     if [ ${retval} -eq 1 ]; then
-      backup_vm="${VBOX_PATH}/${vm}"
+      backup_vm="${VBOX_PATH// /\\ }/${vm}"
       filepath="${storage}/${vm}.tar.gz"
+
       _ssh_exec $sshauth \
                --cmd="/usr/bin/tar -czf - ${backup_vm} | /bin/cat" > ${filepath}
       retval=$?
@@ -57,9 +60,10 @@ main_backup_server() {
         printf "VM backup successful - ${vm}\n"
       else
         printf "Error when trying compress a vm - ${vm}\n"
+        error=true
       fi
 
-      _ssh_exec ${sshauth} --cmd="/bin/su -l vbox -c
+      _ssh_exec ${sshauth} --cmd="/bin/su -l vbox -c \
                           \"/usr/bin/VBoxManage startvm ${vm} --type headless\""
       retval=$?
 
@@ -67,13 +71,15 @@ main_backup_server() {
         printf "VM started sucessful - ${vm}\n"
       else
         printf "Error when trying start a vm - ${vm}\n"
+        error=true
       fi
     else
       printf "Error the vm ${vm} is running or not exists\n"
+      error=true
     fi
   done  #for vm in ${VBOX_VM[@]}
 
-  if [ ${retval} -eq 0 ]; then
+  if [ ${retval} -eq 0 ] && ! ${error}; then
     old_files=$(/usr/bin/find ${backup_dir} -maxdepth 1 -type d \
                                       -mtime +${DAYS} -exec /bin/rm -Rvf {} \;)
     printf "Remove old backups\n${old_files}\n"
