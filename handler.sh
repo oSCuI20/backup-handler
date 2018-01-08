@@ -64,7 +64,7 @@ main() {
           read_config "${_SCRIPTCONF}/${script}.conf" && {
             ${SERVER} && HOSTNAME="$SSH_HOST" || HOSTNAME="$(/bin/hostname -f)"
             for h in ${SSH_HOST[@]}; do
-                EMAILSUBJECT="Backup MySQL ${HOSTNAME}"
+              EMAILSUBJECT="Backup MySQL ${HOSTNAME}"
               run_script ${script} ${h}
             done
           }

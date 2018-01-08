@@ -20,7 +20,7 @@ main_backup() {
   now=$(/bin/date +%Y%m%d)
 
   week_now=$(/bin/date +%u)
-  [ "${WEEK_DAY}" != ${week_now} ] && exit 0
+  [ "${WEEK_DAY}" != ${week_now} ] && exit 256
 
   ${SERVER} && HOSTNAME="${host}" || HOSTNAME="$(/bin/hostname -f)"
 

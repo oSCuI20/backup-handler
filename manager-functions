@@ -45,12 +45,12 @@ run_script() {
       retval=$?
       subject="Success - ${EMAILSUBJECT}"
 
-      if [ ${retval} -gt 0 ]; then
-        log_end_msg
+      log_end_msg
+      if [ ${retval} -gt 0 ] && [ ${retval} -lt 256 ]; then
         log_failure_msg "The script ${run} failed with return code ${retval}"
         subject="Failed - ${EMAILSUBJECT}"
-      else
-        log_end_msg
+      elif [ ${retval} -eq 256 ]; then
+        EMAIL=false
       fi
     else
       log_warning_msg "Cannot execute ${run} check if file exists or permission"
