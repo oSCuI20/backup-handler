@@ -2,132 +2,63 @@
 #
 # Eduardo Banderas Alba
 # Event handler
-# ./handler.sh
 
-export _CONFIGDIR
-export _FILECONF
-export _SCRIPTDIR
-export _ORDER
-export _QUIET
-export _LOGDIR
-export _DEBUG
-export _SCRIPTCONF
-export _LOGFILE
-export _PIDFILE
+export _CONFIGDIR=$(/bin/readlink -f ./)
+export _PIDFILE=/var/run/handler.locked
 
+_FILECONF="./manager.conf"
 _EXEC="null"
 
 
 main() {
-  parse_arguments "$@"
-
   #Load config file and manager-functions
-  . ${_CONFIGDIR}/manager-functions
   load_fileconf "${_FILECONF}"
-
+  parse_arguments "$@"
+  . ${_CONFIGDIR}/manager-functions
   _locked  #Lock the script
 
-  if [ "${_EXEC}" == "null" ]; then
-    ${BACKUP_FILES} && {
-      for s in `/bin/ls -v ${_SCRIPTDIR}/backup_files-* 2> /dev/null`; do
-        script=$(/usr/bin/basename ${s})
-        disabled=false
-        [ "${script: -9}" == ".disabled" ] && disabled=true
+  for s in `/bin/ls -v ${_SCRIPTCONF}/* 2> /dev/null`; do
+    cnf=$(/usr/bin/basename ${s})
+    disabled=false
+    [ "${cnf: -9}" == ".disabled" ] && disabled=true
 
-        ! ${disabled} && {
-          _LOGFILE="${_LOGDIR}/${script}_log"
-          [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+    ! ${disabled} && {
+      export _LOGFILE="${_LOGDIR}/${cnf}.log"
+      read_config "${_SCRIPTCONF}/$cnf" && {
+        run_script "${_SCRIPTDIR}/files"
+        ret_files=$?
 
-          read_config "${_SCRIPTCONF}/${script}.conf" && {
-            ${SERVER} && HOSTNAME="$SSH_HOST" || HOSTNAME="$(/bin/hostname -f)"
-            for dir in ${BACKUP_DIR[@]}; do
-              EMAILSUBJECT="Backup Files ${HOSTNAME}"
-              run_script ${script} ${dir}
-            done
-          }
-          ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
-          unset_config "${_SCRIPTCONF}/${script}.conf"
-        }
-      done
-    }  #${BACKUP_FILES}
+        run_script "${_SCRIPTDIR}/mysql"
+        ret_mysql=$?
 
-    ${BACKUP_MYSQL} && {
-      for s in `/bin/ls -v ${_SCRIPTDIR}/backup_mysql-* 2> /dev/null`; do
-        script=$(/usr/bin/basename ${s})
-        disabled=false
-        [ "${script: -9}" == ".disabled" ] && disabled=true
+        run_script "${_SCRIPTDIR}/vbox"
+        ret_vbox=$?
 
-        ! ${disabled} && {
-          _LOGFILE="${_LOGDIR}/${script}_log"
-          [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+        ${EMAIL} && {
+          subject="Check email - ${EMAILSUBJECT}"
 
-          read_config "${_SCRIPTCONF}/${script}.conf" && {
-            ${SERVER} && HOSTNAME="$SSH_HOST" || HOSTNAME="$(/bin/hostname -f)"
-            for h in ${SSH_HOST[@]}; do
-              EMAILSUBJECT="Backup MySQL ${HOSTNAME}"
-              run_script ${script} ${h}
-            done
-          }
-          ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
-          unset_config "${_SCRIPTCONF}/${script}.conf"
-        }
-      done
-    }  #${BACKUP_MYSQL}
+          if [ ${ret_files} -eq 0 ] && [ ${ret_mysql} -eq 0 ] && \
+             [ ${ret_vbox} -eq 0 ]; then
+            subject="Success - ${EMAILSUBJECT}"
+          fi
 
-    ${BACKUP_VIRTUALBOX} && {
-      for s in `/bin/ls -v ${_SCRIPTDIR}/backup_vbox-* 2> /dev/null`; do
-        script=$(/usr/bin/basename ${s})
-        disabled=false
-        [ "${script: -9}" == ".disabled" ] && disabled=true
+          if [ ${ret_files} -eq 256 ] || [ ${ret_mysql} -eq 256 ] || \
+             [ ${ret_vbox} -eq 256 ]; then
+            subject="Success - ${EMAILSUBJECT}"
+          fi
 
-        ! ${disabled} && {
-          _LOGFILE="${_LOGDIR}/${script}_log"
-          [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
+          if ([ ${ret_files} -gt 0 ] && [ ${ret_files} -lt 256 ]) || \
+             ([ ${ret_mysql} -gt 0 ] && [ ${ret_mysql} -lt 256 ]) || \
+             ([ ${ret_vbox} -gt 0 ] && [ ${ret_vbox} -lt 256 ]); then
+            subject="Failed - ${EMAILSUBJECT}"
+          fi
 
-          read_config "${_SCRIPTCONF}/${script}.conf" && {
-            for h in ${SSH_HOST[@]}; do
-              EMAILSUBJECT="Backup VBox"
-              run_script ${script} ${h}
-            done
-          }
-          ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
-          unset_config "${_SCRIPTCONF}/${script}.conf"
-        }
-      done
-    }  #${BACKUP_VIRTUALBOX}
+          _send_email "${EMAILADDR}" "${subject}" "$_LOGFILE"
+        }  #${EMAIL}
+      }  #read_config "${_SCRIPTCONF}/$cnf"
+    }  #! ${disabled}
+  done # for s in `/bin/ls -v ${_SCRIPTCONF}/* 2> /dev/null`
 
-    scripts_files=$(/bin/ls -v "${_SCRIPTDIR}")
-    for script_name in ${scripts_files}; do
-      disabled=false
-      if [ "${script_name: -9}" == ".disabled" ] || \
-         [[ "${script_name}" =~ backup_(files*|mysql*|vbox*) ]]; then
-        disabled=true
-      fi
-
-      ! ${disabled} && {
-        #Execute custom script
-        _LOGFILE="${_LOGDIR}/${script_name}_log"
-        script_conf_name="${_SCRIPTCONF}/${script_name}.conf"
-        [ -f "${_LOGFILE}" ] && /bin/rm -f "${_LOGFILE}"
-        read_config "${script_conf_name}" && {
-          run_script "${script_name}"
-        }
-        ${EMAIL} && _send_email "${EMAILADDR}" "${EMAILSUBJECT}" "$_LOGFILE"
-        unset_config "${script_conf_name}"
-      } #! $disabled
-    done  #for script_name in ${scripts_files}
-
-  else
-    _LOGFILE="${_LOGDIR}/${_EXEC}_log"
-    script_conf_name="${_SCRIPTCONF}/${_EXEC}.conf"
-    [ -f "${_LOGFILE}" ] && /bin/rm -Rf "${_LOGFILE}"
-    if read_config "${script_conf_name}"; then
-      run_script "${_EXEC}"
-    fi
-    unset_config "${script_conf_name}"
-  fi  #if [ ${_EXEC} = "null" ]
-
-  _clean_all
   /bin/rm -f "${_PIDFILE}"  #unlock script
 }  #main
 
@@ -136,10 +67,6 @@ load_fileconf() {
   declare -a require_vars
   require_vars[0]="SERVER"
   require_vars[1]="ARCHIVEROOT"
-  require_vars[2]="BACKUP_FILES"
-  require_vars[3]="BACKUP_MYSQL"
-  require_vars[4]="BACKUP_VIRTUALBOX"
-  require_vars[5]="EMAIL"
 
   if [ ! -f "${1}" ]; then
     printf "Not found configuration file, ${1}"
@@ -147,24 +74,22 @@ load_fileconf() {
   fi
 
   for line in `/bin/cat ${1}`; do
-    _is_not_comment "${line}" && {
-      var=${line//#*/}    #Remove comment in the line
-      key=${var%=*}       #Extract var key
-      value=${var#*=}     #Extract var value
+    var=${line//#*/}    #Remove comment in the line
+    key=${var%=*}       #Extract var key
+    value=${var#*=}     #Extract var value
 
-      if [ "${value}" != "" ]; then
-        export ${key}=${value}
-      else
-        export ${key}
-      fi
-    }  #_is_not_comment "${line}"
+    if [ "${value}" != "" ]; then
+      export ${key}=${value}
+    else
+      export ${key}
+    fi
   done  #for line in `/bin/cat ${_FILECONF}`
 
   enviroment=$(env)
 
   for req in ${require_vars[@]}; do
     if ! printf "${enviroment}" | /bin/grep -q "${req}="; then
-      printf "Not exists enviroment var ${req}"
+      printf "Not exists enviroment var ${req}\n"
       exit 1
     fi  #if ! /bin/printf "${d}" | /bin/grep "${req}"
   done  #for req in ${require_vars[@]}
@@ -213,10 +138,10 @@ parse_arguments() {
 
     case $key in
       --confdir|-c)
-        _CONFIGDIR=$(remove_last_backslash "${value}")
+        _CONFIGDIR=$(/bin/readlink -f "${value}")
         ;;
       --logdir|-l)
-        _LOGDIR=$(remove_last_backslash "${value}")
+        _LOGDIR=$(/bin/readlink -f "${value}")
         ;;
       --debug|-d)
         _DEBUG=true
@@ -245,35 +170,22 @@ parse_arguments() {
     shift
   done
 
-  [ -z ${_CONFIGDIR} ] && _CONFIGDIR=/root/manager
-  [ -z ${_SCRIPTDIR} ] && _SCRIPTDIR="${_CONFIGDIR}/scripts"
-  [ -z ${_FILECONF} ] && _FILECONF="${_CONFIGDIR}/manager.conf"
-  [ -z ${_LOGDIR} ] && _LOGDIR="${_CONFIGDIR}/log"
-  [ -z ${_SCRIPTCONF} ] && _SCRIPTCONF="${_CONFIGDIR}/conf"
-  [ -z ${_PIDFILE} ] && _PIDFILE="${_CONFIGDIR}/locked"
-
   if [ ! -d ${_CONFIGDIR} ]; then
     printf "Not found configdir ${_CONFIGDIR}\n"
     exit 1
   fi
+
+  export _SCRIPTDIR=${_CONFIGDIR}/scripts
+  export _LOGDIR=${_CONFIGDIR}/logs
+  export _SCRIPTCONF=${_CONFIGDIR}/config
 
   if [ ! -d ${_SCRIPTDIR} ]; then
     printf "Not found scriptdir ${_SCRIPTDIR}\n"
     exit 1
   fi
 
-  /bin/mkdir -p "${_SCRIPTCONF}"
   /bin/mkdir -p "${_LOGDIR}"
 }  #parse_arguments
-
-
-remove_last_backslash() {
-  if [ "${1: -1}" == "/" ]; then
-    printf "${1:0:((${#1}-1))}"
-  else
-    printf "$1"
-  fi
-}  #remove_last_backslash
 
 
 main "$@"

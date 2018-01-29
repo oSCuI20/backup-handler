@@ -31,41 +31,34 @@ log_script_msg() {
 
 
 run_script() {
+  output=""
   if [ $# -eq 0 ]; then
     log_failure_msg "Function require arguments, \$1 should be a script name \
 \$2 are the params of script"
-    subject="Failed - ${EMAILSUBJECT}"
   else
-    run="${_SCRIPTDIR}/${1}"
+    run="${1}"
     retval=0
 
-    if [ -x "${run}" ] && [ -f "${run}" ]; then
+    if [ -x "${run}" ]; then
       log_begin_msg "Execute ${run} ${2}"
       output=$(${run} ${2})
       retval=$?
-      subject="Success - ${EMAILSUBJECT}"
-
       log_end_msg
-      if [ ${retval} -gt 0 ] && [ ${retval} -lt 256 ]; then
-        log_failure_msg "The script ${run} failed with return code ${retval}"
-        subject="Failed - ${EMAILSUBJECT}"
-      elif [ ${retval} -eq 256 ]; then
-        EMAIL=false
-      fi
     else
       log_warning_msg "Cannot execute ${run} check if file exists or permission"
-      subject="Warning - ${EMAILSUBJECT}"
+      retval=254
     fi
   fi  # if [ ${#@} -eq 0 ]; then
+
   log_script_msg "${output}"
-  EMAILSUBJECT="${subject}"
+  return $retval
 }  #run_script
 
 
 read_config() {
   if [ ! -f "${1}" ]; then
     log_warning_msg "Not found configuration file, ${1}"
-    return 0
+    return 1
   fi
 
   IFS=$'\n'
@@ -87,9 +80,27 @@ read_config() {
           return 1
         fi
       fi
+      if [ "${key}" == "BACKUP_MYSQL" ]; then
+        if [ "${value}" != "true" ] && [ "${value}" != "false" ]; then
+          log_failure_msg "BACKUP_MYSQL key should be true or false"
+          return 1
+        fi
+      fi
+      if [ "${key}" == "BACKUP_FILES" ]; then
+        if [ "${value}" != "true" ] && [ "${value}" != "false" ]; then
+          log_failure_msg "BACKUP_FILES key should be true or false"
+          return 1
+        fi
+      fi
+      if [ "${key}" == "BACKUP_VBOX" ]; then
+        if [ "${value}" != "true" ] && [ "${value}" != "false" ]; then
+          log_failure_msg "BACKUP_VBOX key should be true or false"
+          return 1
+        fi
+      fi
       export ${key}
     }  #_is_not_comment "${line}"
-  done
+  done  # for line in `/bin/cat ${1}`
 
   . "${1}"
   log_success_msg "Load configuration file"
@@ -154,30 +165,6 @@ _send_email() {
     /bin/cat "${message}"
   } | /usr/sbin/sendmail -oi -t
 }  #_send_email
-
-
-_clean_all() {
-  unset _CONFIGDIR
-  unset _FILECONF
-  unset _SCRIPTDIR
-  unset _ORDER
-  unset _QUIET
-  unset _LOGDIR
-  unset _DEBUG
-  unset _EXEC
-  unset _SCRIPTCONF
-  unset _LOGFILE
-  unset _PIDFILE
-}  #clean_all
-
-
-remove_last_backslash() {
-  if [ "${1: -1}" == "/" ]; then
-    printf "${1:0:((${#1}-1))}"
-  else
-    printf "$1"
-  fi
-}  #remove_last_backslash
 
 
 _ssh_exec() {

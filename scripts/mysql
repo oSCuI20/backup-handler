@@ -1,8 +1,6 @@
 #!/bin/bash
 #
 # Eduardo Banderas Alba
-# $1=SSH_HOST
-#
 # path backups as server: ARCHIVEROOT/SSH_HOST/mysql
 #                         ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db1.sql.gz
 #                         ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db2.sql.gz
@@ -14,29 +12,35 @@
 . ${_CONFIGDIR}/manager-functions
 
 
-main_backup() {
-  /bin/echo ""
-  checking_global_vars
-  now=$(/bin/date +%Y%m%d)
+main() {
+  ret=256
 
-  ${SERVER} && HOSTNAME="${host}" || HOSTNAME="$(/bin/hostname -f)"
+  ${BACKUP_MYSQL} && {
+    /bin/echo ""
+    checking_global_vars
+    now=$(/bin/date +%Y%m%d)
 
-  backup_dir="${ARCHIVEROOT}/${HOSTNAME}/mysql"
-  sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+    ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
 
-  printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+    backup_dir="${ARCHIVEROOT}/${HOSTNAME}/mysql"
+    sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
-  db_ignore=${MYSQL_IGNORE}
-  m_options="-h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASS -P ${MYSQL_PORT}"
-  d_options="${m_options} --single-transaction --triggers --routines"
-  g_options="--best --force --quiet"
-  storage="${backup_dir}/${now}"
+    printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
 
-  ${SERVER} && main_backup_server || main_backup_client
+    db_ignore=${MYSQL_IGNORE}
+    m_options="-h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASS -P ${MYSQL_PORT}"
+    d_options="${m_options} --single-transaction --triggers --routines"
+    g_options="--best --force --quiet"
+    storage="${backup_dir}/${now}"
 
-  printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
-  exit ${retval}
-}  #main_backup
+    ${SERVER} && main_backup_server || main_backup_client
+    ret=$?
+
+    printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+  }  #${BACKUP_MYSQL}
+
+  exit ${ret}
+}  #main
 
 
 main_backup_server() {
@@ -73,6 +77,8 @@ main_backup_server() {
   else
     printf "Error: Cannot execute mysql\n${dbs}\n"
   fi
+
+  return $retval
 }  #main_backup_server
 
 
@@ -110,10 +116,12 @@ main_backup_client() {
     fi
 
     out=$(_ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}")
-    print "${out}"
+    printf "${out}"
   else
     printf "Error: Cannot execute mysql\n${dbs}\n"
   fi
+
+  return $retval
 }  #main_backup_client
 
 
@@ -176,11 +184,4 @@ checking_global_vars() {
 }  #checking_global_vars
 
 
-if [ -z "${1}" ]; then
-  printf "Not exists arguments for the script. \$1 should a \
-ip address of ssh or domain name\n"
-  exit 1
-fi
-host="${1}"
-
-main_backup
+main

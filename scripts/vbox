@@ -1,8 +1,6 @@
 #!/bin/bash
 #
 # Eduardo Banderas Alba
-# $1=SSH_HOST
-#
 # path backups if execute as server: ARCHIVEROOT/SSH_HOST/vbox
 #                                    ARCHIVEROOT/SSH_HOST/vbox/YYYYMMDD/vbox01.tar.gz
 #                                    ARCHIVEROOT/SSH_HOST/vbox/YYYYMMDD/vbox02.tar.gz
@@ -14,27 +12,33 @@
 . ${_CONFIGDIR}/manager-functions
 
 
-main_backup() {
-  /bin/echo ""
-  checking_global_vars
-  now=$(/bin/date +%Y%m%d)
+main() {
+  ret=256
 
-  week_now=$(/bin/date +%u)
-  [ "${WEEK_DAY}" != ${week_now} ] && exit 256
+  ${BACKUP_VBOX} && {
+    /bin/echo ""
+    checking_global_vars
+    now=$(/bin/date +%Y%m%d)
 
-  ${SERVER} && HOSTNAME="${host}" || HOSTNAME="$(/bin/hostname -f)"
+    week_now=$(/bin/date +%u)
+    [ ${WEEK_DAY} -ne ${week_now} ] && exit $ret
 
-  backup_dir="${ARCHIVEROOT}/${HOSTNAME}/vbox"
-  storage="${backup_dir}/${now}"
-  sshauth="--host=$host --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+    ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
 
-  printf "Starting VBox backup, at `/bin/date`\n"
+    backup_dir="${ARCHIVEROOT}/${HOSTNAME}/vbox"
+    storage="${backup_dir}/${now}"
+    sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
-  ${SERVER} && main_backup_server || main_backup_client
+    printf "Starting VBox backup, at `/bin/date`\n"
 
-  printf "Finish VBox backup, at `/bin/date`\n"
-  exit ${retval}
-}  #main_backup
+    ${SERVER} && main_backup_server || main_backup_client
+    ret=$?
+
+    printf "Finish VBox backup, at `/bin/date`\n"
+  }  #${BACKUP_VBOX}
+
+  exit $ret
+}  #main
 
 
 main_backup_server() {
@@ -86,6 +90,8 @@ main_backup_server() {
   else
     printf "Skip remove old backups\n"
   fi
+
+  return $retval
 }  #main_backup_server
 
 
@@ -174,11 +180,4 @@ checking_global_vars() {
 }  #checking_global_vars
 
 
-if [ -z "${1}" ]; then
-  printf "Not exists arguments for the script. \$1 should a \
-ip address of ssh or domain name\n"
-  exit 1
-fi
-host="${1}"
-
-main_backup
+main

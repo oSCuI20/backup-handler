@@ -1,8 +1,6 @@
 #!/bin/bash
 #
 # Eduardo Banderas Alba
-# $1 backup directory
-#
 # path backups if execute as server: ARCHIVEROOT/SSH_HOST/files
 #                                    ARCHIVEROOT/SSH_HOST/files/main
 #                                    ARCHIVEROOT/SSH_HOST/files/YYYYMMDD
@@ -10,33 +8,40 @@
 # path backups if execute as client: ARCHIVEROOT/hostname/files
 #                                    ARCHIVEROOT/hostname/files/main
 #                                    ARCHIVEROOT/hostname/files/YYYYMMDD
-#
-# The script use rsync tools for backups
 
 . ${_CONFIGDIR}/manager-functions
 
 
-main_backup() {
-  /bin/echo ""
-  checking_global_vars
-  now=$(/bin/date +%Y%m%d)
+main() {
+  ret=256
 
-  ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
+  ${BACKUP_FILES} && {
+    /bin/echo ""
+    checking_global_vars
+    now=$(/bin/date +%Y%m%d)
 
-  backup_dir="${ARCHIVEROOT}/${HOSTNAME}/files"
-  main="${backup_dir}/main${directory}"
-  increment="${backup_dir}/${now}"
-  rsync_options=("--force" "--ignore-errors" "--delete" \
-                 "--backup" "--backup-dir=${increment}" "-azh")
+    ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
 
-  printf "Starting backup files, ${directory} at `/bin/date`\n"
+    backup_dir="${ARCHIVEROOT}/${HOSTNAME}/files"
+    printf "Stating backup files ${HOSTNAME}, `/bin/date`\n"
 
-  export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
-  ${SERVER} && main_backup_server || main_backup_client
+    for dir in ${BACKUP_DIR[@]}; do
+      main="${backup_dir}/main${dir}"
+      increment="${backup_dir}/${now}"
+      rsync_options=("--force" "--ignore-errors" "--delete" \
+                     "--backup" "--backup-dir=${increment}" "-azh")
 
-  printf "Finish backup, ${directory} at `/bin/date`\n"
-  exit ${retval}
-}  #main_backup
+      printf "Start backup directory, $dir\n"
+      export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
+      ${SERVER} && main_backup_server || main_backup_client
+      ret=$?
+
+      printf "Finish backup directory, $dir\n"
+    done  #for dir in ${BACKUP_DIR[@]}
+  }  #${BACKUP_FILES}
+
+  exit $ret
+}  #main
 
 
 main_backup_server() {
@@ -53,14 +58,14 @@ main_backup_server() {
     out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
                                   -exec /bin/rm -vRf {} \;)
 
-    if [ "${out}" != "" ]; then
-      printf "Remove backups higher than ${DAYS}\n${out}\n"
-    fi
+    [ "${out}" != "" ] && printf "Remove backups higher than ${DAYS}\n${out}\n"
 
     /bin/du -sh ${backup_dir}
   else
     printf "Error: Cannot execute rsync\n"
   fi
+
+  return $retval
 }  #main_backup_server
 
 
@@ -82,15 +87,14 @@ main_backup_client() {
     out=$(_ssh_exec ${sshauth} --cmd="/bin/find ${backup_dir} \
           -maxdepth 1 -name 2*.tar.gz -mtime +${DAYS} -exec /bin/rm -vRf {} \;")
 
-    if [ "${out}" != "" ]; then
-      printf "Remove backups higher than ${DAYS}\n${out}\n"
-    fi
+    [ "${out}" != "" ] && printf "Remove backups higher than ${DAYS}\n${out}\n"
 
-    out=$(_ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}")
-    printf "${out}\n"
+    _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
   else
     printf "Error: Cannot execute rsync\n"
   fi
+
+  return $retval
 }  #main_backup_client
 
 
@@ -122,6 +126,11 @@ checking_global_vars() {
     exit 1
   fi
 
+  if [ -z "${BACKUP_DIR}" ] || [ "${BACKUP_DIR}" == "" ]; then
+    printf "BACKUP_DIR not defined"
+    exit 1
+  fi
+
   if [ -z "${TEMPDIR}" ] || [ "${TEMPDIR}" == "" ] || \
      [ ! -d "${TEMPDIR}" ]; then
     TEMPDIR=/var/tmp
@@ -132,16 +141,5 @@ checking_global_vars() {
   fi
 }  #checking_global_vars
 
-if [ ! -f /usr/bin/rsync ] || [ ! -x /usr/bin/rsync ]; then
-  printf "Rsync tool is needed\n"
-  exit 1
-fi
 
-if [ -z "${1}" ]; then
-  printf "Not exists arguments for the script. \$1 should a directory for \
-backup\n"
-  exit 1
-fi
-directory="${1}"
-
-main_backup
+main
