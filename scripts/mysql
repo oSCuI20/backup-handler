@@ -36,6 +36,12 @@ main() {
     ${SERVER} && main_backup_server || main_backup_client
     ret=$?
 
+    ${SERVER} && {
+      /bin/du -sh ${backup_dir}
+    } || {
+      _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
+    }
+    
     printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
   }  #${BACKUP_MYSQL}
 
@@ -72,8 +78,6 @@ main_backup_server() {
     if [ "${out}" != "" ]; then
       printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
-
-    /bin/du -sh ${backup_dir}
   else
     printf "Error: Cannot execute mysql\n${dbs}\n"
   fi
@@ -114,9 +118,6 @@ main_backup_client() {
     if [ "${out}" != "" ]; then
       printf "Remove backups higher than ${DAYS}\n${out}\n"
     fi
-
-    out=$(_ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}")
-    printf "${out}"
   else
     printf "Error: Cannot execute mysql\n${dbs}\n"
   fi

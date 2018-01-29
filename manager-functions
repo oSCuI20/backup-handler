@@ -103,7 +103,7 @@ read_config() {
   done  # for line in `/bin/cat ${1}`
 
   . "${1}"
-  log_success_msg "Load configuration file"
+  log_success_msg "Load configuration file $1"
   return 0
 }  #read_config
 

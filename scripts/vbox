@@ -34,6 +34,12 @@ main() {
     ${SERVER} && main_backup_server || main_backup_client
     ret=$?
 
+    ${SERVER} && {
+      /bin/du -sh ${backup_dir}
+    } || {
+      _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
+    }
+    
     printf "Finish VBox backup, at `/bin/date`\n"
   }  #${BACKUP_VBOX}
 

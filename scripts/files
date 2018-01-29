@@ -31,13 +31,20 @@ main() {
       rsync_options=("--force" "--ignore-errors" "--delete" \
                      "--backup" "--backup-dir=${increment}" "-azh")
 
-      printf "Start backup directory, $dir\n"
+      printf "Start backup $dir\n"
       export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
       ${SERVER} && main_backup_server || main_backup_client
       ret=$?
 
-      printf "Finish backup directory, $dir\n"
+      printf "Finish backup $dir\n"
     done  #for dir in ${BACKUP_DIR[@]}
+
+    ${SERVER} && {
+      /bin/du -sh ${backup_dir}
+    } || {
+      _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
+    }
+    printf "Finish backup files ${HOSTNAME}, `/bin/date`\n"
   }  #${BACKUP_FILES}
 
   exit $ret
@@ -46,13 +53,13 @@ main() {
 
 main_backup_server() {
   /bin/mkdir -p ${main}
-  connection=("${SSH_USER}@${SSH_HOST}:${directory}/" "${main}")
+  connection=("${SSH_USER}@${SSH_HOST}:${dir}/" "${main}")
 
   /usr/bin/rsync "${rsync_options[@]}" "${connection[@]}"
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
-    filepath="${increment}${directory//\//.}.tar.gz"
+    filepath="${increment}${dir//\//.}.tar.gz"
     [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment} .
     [ -d ${increment} ] && /bin/rm -Rf ${increment}
     out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
@@ -60,7 +67,6 @@ main_backup_server() {
 
     [ "${out}" != "" ] && printf "Remove backups higher than ${DAYS}\n${out}\n"
 
-    /bin/du -sh ${backup_dir}
   else
     printf "Error: Cannot execute rsync\n"
   fi
@@ -73,13 +79,13 @@ main_backup_client() {
   sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
   _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${main}"
-  connection=("${directory}/" "${SSH_USER}@${SSH_HOST}:${main}")
+  connection=("${dir}/" "${SSH_USER}@${SSH_HOST}:${main}")
 
   /usr/bin/rsync "${rsync_options[@]}" "${connection[@]}"
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
-    filepath="${increment}${directory/\//.}.tar.gz"
+    filepath="${increment}${dir/\//.}.tar.gz"
     _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
                               /bin/tar -czf ${filepath} -C ${increment} .; \
                               [ -d ${increment} ] && /bin/rm -Rf ${increment}"
@@ -89,7 +95,6 @@ main_backup_client() {
 
     [ "${out}" != "" ] && printf "Remove backups higher than ${DAYS}\n${out}\n"
 
-    _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
   else
     printf "Error: Cannot execute rsync\n"
   fi
