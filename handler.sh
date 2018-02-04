@@ -3,10 +3,10 @@
 # Eduardo Banderas Alba
 # Event handler
 
-export _CONFIGDIR=$(/bin/readlink -f ./)
+export _CONFIGDIR=/root/manager
 export _PIDFILE=/var/run/handler.locked
 
-_FILECONF="./manager.conf"
+_FILECONF=${_CONFIGDIR}/manager.conf
 _EXEC="null"
 
 
@@ -24,6 +24,7 @@ main() {
 
     ! ${disabled} && {
       export _LOGFILE="${_LOGDIR}/${cnf}.log"
+      /bin/rm -f ${_LOGFILE}
       read_config "${_SCRIPTCONF}/$cnf" && {
         run_script "${_SCRIPTDIR}/files"
         ret_files=$?
