@@ -39,7 +39,7 @@ main() {
     } || {
       _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
     }
-    
+
     printf "Finish VBox backup, at `/bin/date`\n"
   }  #${BACKUP_VBOX}
 
@@ -50,6 +50,7 @@ main() {
 main_backup_server() {
   /bin/mkdir -p ${storage}
   error=false
+  VBOX_VM=(${VBOX_VM})
 
   for vm in ${VBOX_VM[@]}; do
     printf "$vm\n"
