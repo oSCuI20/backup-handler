@@ -24,7 +24,7 @@ main() {
 
     backup_dir="${ARCHIVEROOT}/${HOSTNAME}/files"
     printf "Stating backup files ${HOSTNAME}, `/bin/date`\n"
-
+    BACKUP_DIR=(${BACKUP_DIR})
     for dir in ${BACKUP_DIR[@]}; do
       main="${backup_dir}/main${dir}"
       increment="${backup_dir}/${now}"
