@@ -67,7 +67,7 @@ main() {
 load_fileconf() {
   declare -a require_vars
   require_vars[0]="SERVER"
-  require_vars[1]="ARCHIVEROOT"
+  #require_vars[1]="ARCHIVEROOT"
 
   if [ ! -f "${1}" ]; then
     printf "Not found configuration file, ${1}"
@@ -190,3 +190,4 @@ parse_arguments() {
 
 
 main "$@"
+
