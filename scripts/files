@@ -85,7 +85,7 @@ main_backup_client() {
   retval=$?
 
   if [ ${retval} -eq 0 ]; then
-    filepath="${increment}${dir/\//.}.tar.gz"
+    filepath="${increment}${dir//\//.}.tar.gz"
     _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
                               /bin/tar -czf ${filepath} -C ${increment} .; \
                               [ -d ${increment} ] && /bin/rm -Rf ${increment}"
