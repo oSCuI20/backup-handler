@@ -13,7 +13,6 @@ __logger() {
   echo -e " ${__icon} ${__msg[@]}"
 
   [ "${__icon}" == "${__ERROR}" ] && exit 1
-  [ "${__icon}" == "${__FAIL}" ] && exit 1
 
   return 0
 }
@@ -32,7 +31,7 @@ log_script_msg() {
 run_script() {
   output=""
   if [ $# -eq 0 ]; then
-    log_failure_msg "Function require arguments, \$1 should be a script name \
+    __logger ${__FAIL} "Function require arguments, \$1 should be a script name \
 \$2 are the params of script"
   else
     run="${1}"

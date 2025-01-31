@@ -14,7 +14,7 @@ run() {
 
   ${_RUN_BACKUP_FILES} && {
     /bin/echo ""
-    checking_global_vars
+    checking_vars
     now=$(/bin/date +%Y%m%d)
 
     HOSTNAME="$(/bin/hostname -f)"
@@ -28,7 +28,7 @@ run() {
       increment="${backup_dir}/${now}"
       rclone_options=("--backup-dir=${increment}")
 
-      /usr/bin/rclone sync ${rclone_options[@]} ${dir} ${main}
+      echo "/usr/bin/rclone sync ${rclone_options[@]} ${dir} ${main}"
 
       printf "Finish backup $dir\n"
     done  #for dir in ${BACKUP_DIR[@]}
@@ -55,6 +55,3 @@ checking_vars() {
     DAYS=25
   fi
 }  #checking_global_vars
-
-
-main

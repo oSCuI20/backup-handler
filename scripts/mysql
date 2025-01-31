@@ -15,7 +15,7 @@
 main() {
   ret=256
 
-  ${BACKUP_MYSQL} && {
+  ${_RUN_BACKUP_MYSQL} && {
     /bin/echo ""
     checking_global_vars
     now=$(/bin/date +%Y%m%d)
@@ -41,7 +41,7 @@ main() {
     } || {
       _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
     }
-    
+
     printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
   }  #${BACKUP_MYSQL}
 

@@ -15,7 +15,7 @@
 main() {
   ret=256
 
-  ${BACKUP_VBOX} && {
+  ${_RUN_BACKUP_VBOX} && {
     /bin/echo ""
     checking_global_vars
     now=$(/bin/date +%Y%m%d)

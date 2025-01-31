@@ -24,6 +24,11 @@ main() {
 
   load_fileconf ${_CONFIG_FILE}
 
+  ${_RUN_BACKUP_FILES} && {
+    . ${_SCRIPTS_DIR}/files
+
+    run
+  }
 
 }  #main
 
@@ -34,35 +39,15 @@ load_fileconf() {
     _RUN_BACKUP_MYSQL
     _RUN_BACKUP_POSTGRESQL
     _RUN_BACKUP_VBOX
-    _ARCHIVEROOT
     RCLONE_BACKUP_REMOTE
   )
 
-  if [ ! -f "${1}" ]; then
-    printf "Not found configuration file, ${1}"
-    exit 1
-  fi
+  [ ! -f "${1}" ] && {
+    __logger ${__ERROR} Not found configuration file, ${1}
+  }
 
-  for line in `/bin/cat ${1}`; do
-    var=${line//#*/}    #Remove comment in the line
-    key=${var%=*}       #Extract var key
-    value=${var#*=}     #Extract var value
+  . $1
 
-    if [ "${value}" != "" ]; then
-      export ${key}=${value}
-    else
-      export ${key}
-    fi
-  done  #for line in `/bin/cat ${_FILECONF}`
-
-  enviroment=$(env)
-
-  for req in ${require_vars[@]}; do
-    if ! printf "${enviroment}" | /bin/grep -q "${req}="; then
-      printf "Not exists enviroment var ${req}\n"
-      exit 1
-    fi  #if ! /bin/printf "${d}" | /bin/grep "${req}"
-  done  #for req in ${require_vars[@]}
 }  #load_fileconf
 
 
@@ -144,11 +129,11 @@ parse_arguments() {
   done
 
   [ ! -f ${_CONFIG_FILE} ] && {
-    __logger ${__FAIL} Not found ${_CONFIG_FILE}
+    __logger ${__ERROR} Not found ${_CONFIG_FILE}
   }
 
   [ ! -f ${_CONFIG_RCLONE} ] && {
-    __logger ${__FAIL} Not found ${_CONFIG_RCLONE}
+    __logger ${__ERROR} Not found ${_CONFIG_RCLONE}
   }
 
   [ ! -d ${_LOGDIR} ] && {
