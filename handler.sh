@@ -34,20 +34,20 @@ main() {
 
 
 load_fileconf() {
-  require_vars=(
-    _RUN_BACKUP_FILES
-    _RUN_BACKUP_MYSQL
-    _RUN_BACKUP_POSTGRESQL
-    _RUN_BACKUP_VBOX
-    RCLONE_BACKUP_REMOTE
-  )
-
   [ ! -f "${1}" ] && {
     __logger ${__ERROR} Not found configuration file, ${1}
   }
 
   . $1
 
+  _RUN_BACKUP_FILES=${_RUN_BACKUP_FILES:-false }
+  _RUN_BACKUP_MYSQL=${_RUN_BACKUP_MYSQL:-false }
+  _RUN_BACKUP_POSTGRESQL=${_RUN_BACKUP_POSTGRESQL:-false }
+  _RUN_BACKUP_VBOX=${_RUN_BACKUP_VBOX:-false }
+
+  [ -z "${RCLONE_BACKUP_REMOTE}" ] && {
+    __logger ${__ERROR} RCLONE_BACKUP_REMOTE not define
+  }
 }  #load_fileconf
 
 
