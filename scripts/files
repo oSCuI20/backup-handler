@@ -18,9 +18,10 @@ run() {
     now=$(/bin/date +%Y%m%d)
 
     HOSTNAME="$(/bin/hostname -f)"
-    backup_dir="${_ARCHIVEROOT}/${HOSTNAME}/files"
 
     printf "Stating backup files ${HOSTNAME}, `/bin/date`\n"
+
+    backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
 
     for dir in ${BACKUP_DIR[@]}; do
       main="${backup_dir}/main${dir}"
