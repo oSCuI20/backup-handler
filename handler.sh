@@ -147,8 +147,8 @@ parse_arguments() {
     __logger ${__FAIL} Not found ${_CONFIG_FILE}
   }
 
-  [ ! -f ${_CONFIGDIR}/rclone.conf ] && {
-    __logger ${__FAIL} Not found ${_CONFIGDIR}/rclone.conf
+  [ ! -f ${_CONFIG_RCLONE} ] && {
+    __logger ${__FAIL} Not found ${_CONFIG_RCLONE}
   }
 
   [ ! -d ${_LOGDIR} ] && {
