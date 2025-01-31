@@ -154,7 +154,7 @@ parse_arguments() {
   [ ! -d ${_LOGDIR} ] && {
     __logger ${__WARN} Not found ${_LOGDIR}, creating logs directory
 
-    mkdir -p "${_LOGDIR}
+    mkdir -p "${_LOGDIR}"
   }
 
 }  #parse_arguments
