@@ -2,72 +2,41 @@
 #
 # Eduardo Banderas Alba
 # Event handler
+#
+_DEBUG=false
+_QUIET=true
 
-export _CONFIGDIR=/root/manager
-export _PIDFILE=/var/run/handler.locked
+_ROOT="$(/bin/dirname $(/bin/readlink -f $0))"
+_CONFIG_FILE="${_ROOT}/config/backup.conf"
+_CONFIG_RCLONE="${_ROOT}/config/rclone.conf"
 
-_FILECONF=${_CONFIGDIR}/manager.conf
+_SCRIPTS_DIR="${_ROOT}/scripts"
+_LOGDIR="${_ROOT}/logs"
+
+_PIDFILE=/var/run/hanled-backup.locked
 _EXEC="null"
+
+. ${_ROOT}/manager-functions
 
 
 main() {
-  #Load config file and manager-functions
-  load_fileconf "${_FILECONF}"
-  parse_arguments "$@"
-  . ${_CONFIGDIR}/manager-functions
-  _locked  #Lock the script
+  parse_arguments "$@"  #parse arguments and load configs
 
-  for s in `/bin/ls -v ${_SCRIPTCONF}/* 2> /dev/null`; do
-    cnf=$(/usr/bin/basename ${s})
-    disabled=false
-    [ "${cnf: -9}" == ".disabled" ] && disabled=true
+  load_fileconf ${_CONFIG_FILE}
 
-    ! ${disabled} && {
-      export _LOGFILE="${_LOGDIR}/${cnf}.log"
-      /bin/rm -f ${_LOGFILE}
-      read_config "${_SCRIPTCONF}/$cnf" && {
-        run_script "${_SCRIPTDIR}/files"
-        ret_files=$?
 
-        run_script "${_SCRIPTDIR}/mysql"
-        ret_mysql=$?
-
-        run_script "${_SCRIPTDIR}/vbox"
-        ret_vbox=$?
-
-        ${EMAIL} && {
-          subject="Check email - ${EMAILSUBJECT}"
-
-          if [ ${ret_files} -eq 0 ] && [ ${ret_mysql} -eq 0 ] && \
-             [ ${ret_vbox} -eq 0 ]; then
-            subject="Success - ${EMAILSUBJECT}"
-          fi
-
-          if [ ${ret_files} -eq 256 ] || [ ${ret_mysql} -eq 256 ] || \
-             [ ${ret_vbox} -eq 256 ]; then
-            subject="Success - ${EMAILSUBJECT}"
-          fi
-
-          if ([ ${ret_files} -gt 0 ] && [ ${ret_files} -lt 256 ]) || \
-             ([ ${ret_mysql} -gt 0 ] && [ ${ret_mysql} -lt 256 ]) || \
-             ([ ${ret_vbox} -gt 0 ] && [ ${ret_vbox} -lt 256 ]); then
-            subject="Failed - ${EMAILSUBJECT}"
-          fi
-
-          _send_email "${EMAILADDR}" "${subject}" "$_LOGFILE"
-        }  #${EMAIL}
-      }  #read_config "${_SCRIPTCONF}/$cnf"
-    }  #! ${disabled}
-  done # for s in `/bin/ls -v ${_SCRIPTCONF}/* 2> /dev/null`
-
-  /bin/rm -f "${_PIDFILE}"  #unlock script
 }  #main
 
 
 load_fileconf() {
-  declare -a require_vars
-  require_vars[0]="SERVER"
-  #require_vars[1]="ARCHIVEROOT"
+  require_vars=(
+    _RUN_BACKUP_FILES
+    _RUN_BACKUP_MYSQL
+    _RUN_BACKUP_POSTGRESQL
+    _RUN_BACKUP_VBOX
+    _ARCHIVEROOT
+    RCLONE_BACKUP_REMOTE
+  )
 
   if [ ! -f "${1}" ]; then
     printf "Not found configuration file, ${1}"
@@ -138,8 +107,11 @@ parse_arguments() {
     fi
 
     case $key in
-      --confdir|-c)
-        _CONFIGDIR=$(/bin/readlink -f "${value}")
+      --config-file|-c)
+        _CONFIG_FILE=$(/bin/readlink -f "${value}")
+        ;;
+      --config-rclone|-c)
+        _CONFIG_RCLONE=$(/bin/readlink -f "${value}")
         ;;
       --logdir|-l)
         _LOGDIR=$(/bin/readlink -f "${value}")
@@ -162,7 +134,7 @@ parse_arguments() {
         exit 0
         ;;
       *)
-        /usr/bin/printf "Not recognized option ${key}\n"
+        __logger ${__ERROR} Not recognized option ${key}
         print_usage
         print_help
         exit 1
@@ -171,23 +143,21 @@ parse_arguments() {
     shift
   done
 
-  if [ ! -d ${_CONFIGDIR} ]; then
-    printf "Not found configdir ${_CONFIGDIR}\n"
-    exit 1
-  fi
+  [ ! -f ${_CONFIG_FILE} ] && {
+    __logger ${__FAIL} Not found ${_CONFIG_FILE}
+  }
 
-  export _SCRIPTDIR=${_CONFIGDIR}/scripts
-  export _LOGDIR=${_CONFIGDIR}/logs
-  export _SCRIPTCONF=${_CONFIGDIR}/config
+  [ ! -f ${_CONFIGDIR}/rclone.conf ] && {
+    __logger ${__FAIL} Not found ${_CONFIGDIR}/rclone.conf
+  }
 
-  if [ ! -d ${_SCRIPTDIR} ]; then
-    printf "Not found scriptdir ${_SCRIPTDIR}\n"
-    exit 1
-  fi
+  [ ! -d ${_LOGDIR} ] && {
+    __logger ${__WARN} Not found ${_LOGDIR}, creating logs directory
 
-  /bin/mkdir -p "${_LOGDIR}"
+    mkdir -p "${_LOGDIR}
+  }
+
 }  #parse_arguments
 
 
 main "$@"
-

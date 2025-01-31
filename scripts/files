@@ -9,128 +9,37 @@
 #                                    ARCHIVEROOT/hostname/files/main
 #                                    ARCHIVEROOT/hostname/files/YYYYMMDD
 
-. ${_CONFIGDIR}/manager-functions
-
-
-main() {
+run() {
   ret=256
 
-  ${BACKUP_FILES} && {
+  ${_RUN_BACKUP_FILES} && {
     /bin/echo ""
     checking_global_vars
     now=$(/bin/date +%Y%m%d)
 
-    ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
+    HOSTNAME="$(/bin/hostname -f)"
+    backup_dir="${_ARCHIVEROOT}/${HOSTNAME}/files"
 
-    backup_dir="${ARCHIVEROOT}/${HOSTNAME}/files"
     printf "Stating backup files ${HOSTNAME}, `/bin/date`\n"
-    BACKUP_DIR=(${BACKUP_DIR})
+
     for dir in ${BACKUP_DIR[@]}; do
       main="${backup_dir}/main${dir}"
       increment="${backup_dir}/${now}"
-      rsync_options=("--force" "--ignore-errors" "--delete" \
-                     "--backup" "--backup-dir=${increment}" "-azh")
+      rclone_options=("--backup-dir=${increment}")
 
-      printf "Start backup $dir\n"
-      export RSYNC_RSH="ssh -i ${SSH_KEY} -p ${SSH_PORT}"
-      ${SERVER} && main_backup_server || main_backup_client
-      ret=$?
+      /usr/bin/rclone sync ${rclone_options[@]} ${dir} ${main}
 
       printf "Finish backup $dir\n"
     done  #for dir in ${BACKUP_DIR[@]}
 
-    ${SERVER} && {
-      /bin/du -sh ${backup_dir}
-    } || {
-      _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
-    }
     printf "Finish backup files ${HOSTNAME}, `/bin/date`\n"
-  }  #${BACKUP_FILES}
+  }  #${_RUN_BACKUP_RCLONE}
 
   exit $ret
 }  #main
 
 
-main_backup_server() {
-  /bin/mkdir -p ${main}
-  connection=("${SSH_USER}@${SSH_HOST}:${dir}/" "${main}")
-
-  /usr/bin/rsync "${rsync_options[@]}" "${connection[@]}"
-  retval=$?
-
-  if [ ${retval} -eq 0 ]; then
-    filepath="${increment}${dir//\//.}.tar.gz"
-    [ -d ${increment} ] && /bin/tar -czf ${filepath} -C ${increment} .
-    [ -d ${increment} ] && /bin/rm -Rf ${increment}
-    out=$(/usr/bin/find ${backup_dir} -maxdepth 1 -name "*.tar.gz" -mtime +${DAYS} \
-                                  -exec /bin/rm -vRf {} \;)
-
-    [ "${out}" != "" ] && printf "Remove backups higher than ${DAYS}\n${out}\n"
-
-  else
-    printf "Error: Cannot execute rsync\n"
-  fi
-
-  return $retval
-}  #main_backup_server
-
-
-main_backup_client() {
-  sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
-
-  _ssh_exec ${sshauth} --cmd="/bin/mkdir -p ${main}"
-  connection=("${dir}/" "${SSH_USER}@${SSH_HOST}:${main}")
-
-  /usr/bin/rsync "${rsync_options[@]}" "${connection[@]}"
-  retval=$?
-
-  if [ ${retval} -eq 0 ]; then
-    filepath="${increment}${dir//\//.}.tar.gz"
-    _ssh_exec $sshauth --cmd="[ -d ${increment} ] && \
-                              /bin/tar -czf ${filepath} -C ${increment} .; \
-                              [ -d ${increment} ] && /bin/rm -Rf ${increment}"
-
-    out=$(_ssh_exec ${sshauth} --cmd="/bin/find ${backup_dir} \
-          -maxdepth 1 -name 2*.tar.gz -mtime +${DAYS} -exec /bin/rm -vRf {} \;")
-
-    [ "${out}" != "" ] && printf "Remove backups higher than ${DAYS}\n${out}\n"
-
-  else
-    printf "Error: Cannot execute rsync\n"
-  fi
-
-  return $retval
-}  #main_backup_client
-
-
-checking_global_vars() {
-  if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
-    printf "SSH_HOST not defined\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    printf "SSH_USER not defined\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
-     [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
-    printf "SSH_PORT not defined or value is not numeric\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
-     [ ! -f "${SSH_KEY}" ]; then
-    printf "SSH_KEY not defined or file not exists\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    printf "SSH_USER not defined"
-    exit 1
-  fi
-
+checking_vars() {
   if [ -z "${BACKUP_DIR}" ] || [ "${BACKUP_DIR}" == "" ]; then
     printf "BACKUP_DIR not defined"
     exit 1

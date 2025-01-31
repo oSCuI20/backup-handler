@@ -1,23 +1,22 @@
 # Utils for handler.sh
 
+__OK=Success:
+__FAIL=Failure:
+__ERROR=Error:
+__WARN=Warning:
+
 ## Logging functions
-_log_msg() {
+__logger() {
+  local __icon=$1
+  local __msg=${@/${__icon}/}
 
-  ! ${_QUIET} && {
-    printf "$@"
-  }
+  echo -e " ${__icon} ${__msg[@]}"
 
-  ${EMAIL} && {
-    printf "$@" >> "${_LOGFILE}"
-  }
-}  #_log_msg
+  [ "${__icon}" == "${__ERROR}" ] && exit 1
+  [ "${__icon}" == "${__FAIL}" ] && exit 1
 
-
-log_success_msg() { _log_msg "Success: $@\n"; }
-log_failure_msg() { _log_msg "Failure: $@\n"; }
-log_warning_msg() { _log_msg "Warning: $@\n"; }
-log_begin_msg() { _log_msg "Begin: $@ ... "; }
-log_end_msg() { _log_msg "done\n"; }
+  return 0
+}
 
 log_script_msg() {
   IFS=$'\n'
