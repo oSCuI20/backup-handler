@@ -25,7 +25,7 @@ run() {
 
     for dir in ${BACKUP_DIR[@]}; do
       main="${backup_dir}/main${dir}"
-      increment="${backup_dir}/${now}/${dir}"
+      increment="${backup_dir}/${now}${dir}"
       rclone_options=("--backup-dir=${increment}")
 
       echo "/usr/bin/rclone --config ${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}"
