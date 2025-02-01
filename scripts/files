@@ -19,13 +19,13 @@ run() {
 
     HOSTNAME="$(/bin/hostname -f)"
 
-    printf "Stating backup files ${HOSTNAME}, `/bin/date`\n"
+    printf "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] stating backup files ${HOSTNAME}\n"
 
     backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
 
     for dir in ${BACKUP_DIR[@]}; do
       main="${backup_dir}/main${dir}"
-      increment="${backup_dir}/${now}${dir}"
+      increment="${backup_dir}/increment/${now}"
       rclone_options=("--backup-dir=${increment}")
 
       printf "Running command: /usr/bin/rclone --config ${_CONFIG_RCLONE} ${RCLONE_EXTRA_OPTIONS} sync ${rclone_options[@]} ${dir} ${main}\n"
@@ -35,7 +35,7 @@ run() {
       printf "Finish backup $dir\n"
     done  #for dir in ${BACKUP_DIR[@]}
 
-    printf "Finish backup files ${HOSTNAME}, `/bin/date`\n"
+    printf "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] finish backup files ${HOSTNAME}\n"
   }  #${_RUN_BACKUP_RCLONE}
 
   exit $ret
