@@ -28,6 +28,8 @@ run() {
       increment="${backup_dir}/${now}${dir}"
       rclone_options=("--backup-dir=${increment}")
 
+      printf "Running command: /usr/bin/rclone --config ${_CONFIG_RCLONE} ${RCLONE_EXTRA_OPTIONS} sync ${rclone_options[@]} ${dir} ${main}\n"
+
       /usr/bin/rclone --config ${_CONFIG_RCLONE} ${RCLONE_EXTRA_OPTIONS} sync ${rclone_options[@]} ${dir} ${main}
 
       printf "Finish backup $dir\n"
