@@ -28,9 +28,9 @@ run() {
       increment="${backup_dir}/increment/${now}"
       rclone_options=("--backup-dir=${increment}")
 
-      printf "Running command: /usr/bin/rclone ${RCLONE_EXTRA_OPTIONS[@]} --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}\n"
+      echo Running command: /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
-      /usr/bin/rclone ${RCLONE_EXTRA_OPTIONS[@]} --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
+      /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
       printf "Finish backup $dir\n"
     done  #for dir in ${BACKUP_DIR[@]}
