@@ -12,7 +12,7 @@
 . ${_CONFIGDIR}/manager-functions
 
 
-main() {
+run() {
   ret=256
 
   ${_RUN_BACKUP_MYSQL} && {
@@ -126,7 +126,7 @@ main_backup_client() {
 }  #main_backup_client
 
 
-checking_global_vars() {
+checking_vars() {
   if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
     printf "SSH_HOST not defined\n"
     exit 1

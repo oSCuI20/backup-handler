@@ -1,59 +1,47 @@
-#!/bin/bash
 #
-# Eduardo Banderas Alba
-# path backups if execute as server: ARCHIVEROOT/SSH_HOST/files
-#                                    ARCHIVEROOT/SSH_HOST/files/main
-#                                    ARCHIVEROOT/SSH_HOST/files/YYYYMMDD
+# backups local files and load to object storage using rclone tool
 #
-# path backups if execute as client: ARCHIVEROOT/hostname/files
-#                                    ARCHIVEROOT/hostname/files/main
-#                                    ARCHIVEROOT/hostname/files/YYYYMMDD
 
 run() {
-  ret=256
+  ret=${__RETURNCODE_SCRIPT_NOTHING}
+  HOSTNAME="$(/bin/hostname -f)"
 
-  ${_RUN_BACKUP_FILES} && {
-    /bin/echo ""
-    checking_vars
-    now=$(/bin/date +%Y%m%d)
+  __log_script_msg starting backup files ${HOSTNAME}\n
 
-    HOSTNAME="$(/bin/hostname -f)"
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
 
-    printf "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] stating backup files ${HOSTNAME}\n"
+  for dir in ${BACKUP_DIR[@]}; do
+    main="${backup_dir}/main${dir}"
+    increment="${backup_dir}/increment/${__NOW_DATE}"
+    rclone_options=("--backup-dir=${increment}")
 
-    backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
+    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
-    for dir in ${BACKUP_DIR[@]}; do
-      main="${backup_dir}/main${dir}"
-      increment="${backup_dir}/increment/${now}"
-      rclone_options=("--backup-dir=${increment}")
+    printf "Finish backup $dir\n"
+  done  #for dir in ${BACKUP_DIR[@]}
 
-      echo Running command: /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
+  __log_script_msg finish backup files ${HOSTNAME}\n
 
-      /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
-
-      printf "Finish backup $dir\n"
-    done  #for dir in ${BACKUP_DIR[@]}
-
-    printf "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] finish backup files ${HOSTNAME}\n"
-  }  #${_RUN_BACKUP_RCLONE}
-
-  exit $ret
-}  #main
+  return ${ret}
+}  #run
 
 
 checking_vars() {
-  if [ -z "${BACKUP_DIR}" ] || [ "${BACKUP_DIR}" == "" ]; then
-    printf "BACKUP_DIR not defined"
-    exit 1
-  fi
+  [ "${BACKUP_DIR}" == "" ] && {
+    __logger ${__FAIL} BACKUP_DIR not defined, cannot run the script
 
-  if [ -z "${TEMPDIR}" ] || [ "${TEMPDIR}" == "" ] || \
-     [ ! -d "${TEMPDIR}" ]; then
+    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
+
+  [ "${TEMPDIR}" == "" ] && {
     TEMPDIR=/var/tmp
-  fi
+  }
 
   if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
     DAYS=25
+
+    __log_script_msg ${__WARN} DAYS not defined, using default ${DAYS}\n
   fi
+
+  return ${__RETURNCODE_OK}
 }  #checking_global_vars

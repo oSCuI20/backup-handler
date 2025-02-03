@@ -1,8 +1,16 @@
 #!/bin/bash
 #
-# Eduardo Banderas Alba
-# Event handler
+# Event handler to execute backups for the server
 #
+
+__RETURNCODE_OK=0
+__RETURNCODE_NOTHING=256
+__RETURNCODE_SCRIPT_NOTHING=255
+__RETURNCODE_SCRIPT_ERROR_ANY=254
+__RETURNCODE_SCRIPT_VARS_NOT_DEFINED=253
+
+_NOW_DATE=$(/bin/date +%Y%m%d)
+
 _DEBUG=false
 _QUIET=true
 
@@ -24,11 +32,33 @@ main() {
 
   load_fileconf ${_CONFIG_FILE}
 
-  ${_RUN_BACKUP_FILES} && {
-    . ${_SCRIPTS_DIR}/files
+  for script in $(ls ${_SCRIPTS_DIR}); do
+    ${_RUN_BACKUP_FILES} && {
+      . ${_SCRIPTS_DIR}/${script}
 
-    run
-  }
+      checking_vars
+      [ $? -ne ${__RETURNCODE_OK} ] && continue
+
+      run
+    }
+
+    ${_RUN_BACKUP_MYSQL} && {
+      . ${_SCRIPTS_DIR}/${script}
+
+      checking_vars
+      [ $? -ne ${__RETURNCODE_OK} ] && continue
+
+      run
+    }
+
+      # ${_RUN_BACKUP_POSTGRESQL} && {
+      # }
+
+      # ${_RUN_BACKUP_VBOX} && {
+      # }
+
+    echo "${_SCRIPTS_DIR}/${script}"
+  done
 
 }  #main
 
@@ -52,41 +82,29 @@ load_fileconf() {
 
 
 print_help() {
-  printf "\
-  --debug|-d
-\tEnable debug mode
-  --quiet|-q
-\tEnable quiet mode, not output in stdout
-  --logdir| -l
-\tSet directory for save output in file when debug mode is enable, default \
-${_LOGDIR}. The name file is the self of script file name
-  --confdir|-c
-\tSet directory as main
-  --pidfile|-p
-\tSet pidfile
-  --only-[script_name]
-\tExecute only the script
-"
+  cat << EOF
+--quiet|-q \tEnable quiet mode, not output in stdout
+--logdir| -l \tSet directory for save output in file when debug mode is enable, default ${_LOGDIR}. The name file is the self of script file name
+--config-file|-c \tSet backup file, default ${_CONFIG_FILE}
+--config-rclone|r \tSet rclone file configuration, default ${_CONFIG_RCLONE}
+--pidfile|-p \tSet pidfile file, default ${_PIDFILE}
+EOF
 }  #print_help
 
 
 print_usage() {
-  printf "Usage: $0"
-  printf "[--debug|-d] [--quiet|-q] "
-  printf "[--logdir|-l /path/to/dir] "
-  printf "[--confdir|-c /path/to/dir] "
-  printf "[--pidfile|-p /path/to/pidfile] \n"
+  cat << EOF
+Usage: $0 [--help] [--quiet|-q] [--logdir|-l /path/to/dir]  [--config-file|-c /path/to/file] [--config-rclone|-r /path/to/file]  [--pidfile|-p /path/to/pidfile]
+EOF
 }  #print_usage
 
 
 parse_arguments() {
   while [ $# -ge 1 ]; do
     key=${1/ /}
-    if [ "${key}" != "--debug" ] && [ "${key}" != "-d" ] && \
        [ "${key}" != "--quiet" ] && [ "${key}" != "-q" ] && \
        [ "${key}" != "--help" ] && [ "${key}" != "-h" ] && \
        [ "${key}" != "--pidfile" ] && [ "${key}" != "-p" ] && \
-       [[ ! "${key}" =~ --only-.* ]]; then
       shift
       value=$1
     fi
@@ -95,23 +113,17 @@ parse_arguments() {
       --config-file|-c)
         _CONFIG_FILE=$(/bin/readlink -f "${value}")
         ;;
-      --config-rclone|-c)
+      --config-rclone|-r)
         _CONFIG_RCLONE=$(/bin/readlink -f "${value}")
         ;;
       --logdir|-l)
         _LOGDIR=$(/bin/readlink -f "${value}")
-        ;;
-      --debug|-d)
-        _DEBUG=true
         ;;
       --quiet|-q)
         _QUIET=false
         ;;
       --pidfile|-p)
         _PIDFILE=$value
-        ;;
-      --only-*)
-        _EXEC=${key/--only-/}
         ;;
       --help)
         print_usage
