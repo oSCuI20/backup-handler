@@ -94,7 +94,7 @@ EOF
 
 print_usage() {
   cat << EOF
-Usage: $0 [--help] [--quiet|-q] [--logdir|-l /path/to/dir]  [--config-file|-c /path/to/file] [--config-rclone|-r /path/to/file]  [--pidfile|-p /path/to/pidfile]
+Usage: $0 [--help] [--quiet|-q] [--logdir|-l /path/to/dir]  [--config-file|-c /path/to/file] [--config-rclone|- /path/to/file]  [--pidfile|-p /path/to/pidfile]
 EOF
 }  #print_usage
 
@@ -102,9 +102,9 @@ EOF
 parse_arguments() {
   while [ $# -ge 1 ]; do
     key=${1/ /}
-       [ "${key}" != "--quiet" ] && [ "${key}" != "-q" ] && \
+    if [ "${key}" != "--quiet" ] && [ "${key}" != "-q" ] && \
        [ "${key}" != "--help" ] && [ "${key}" != "-h" ] && \
-       [ "${key}" != "--pidfile" ] && [ "${key}" != "-p" ] && \
+       [ "${key}" != "--pidfile" ] && [ "${key}" != "-p" ]; then
       shift
       value=$1
     fi
