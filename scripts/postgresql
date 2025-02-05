@@ -8,10 +8,10 @@ run() {
   ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg starting backup files for ${HOSTNAME}\n
+  __log_script_msg postgresql starting backup files for ${HOSTNAME}\n
 
   ! ${_RUN_BACKUP_POSTGRESQL} && {
-    __log_script_msg skipping backup files for ${HOSTNAME}\n
+    __log_script_msg postgresql skipping backup files for ${HOSTNAME}\n
 
     return ${ret}
   }
@@ -25,10 +25,10 @@ run() {
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
-    __log_script_msg Finish backup $dir\n
+    __log_script_msg postgresql Finish backup $dir\n
   done  #for dir in ${BACKUP_DIR[@]}
 
-  __log_script_msg finish backup files ${HOSTNAME}\n
+  __log_script_msg postgresql finish backup files ${HOSTNAME}\n
 
   return ${ret}
 }  #run
@@ -36,7 +36,7 @@ run() {
 
 checking_vars() {
   [ "${BACKUP_DIR}" == "" ] && {
-    __log_script_msg ${__FAIL} BACKUP_DIR not defined, cannot run the script\n
+    __log_script_msg postgresql ${__FAIL} BACKUP_DIR not defined, cannot run the script\n
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
