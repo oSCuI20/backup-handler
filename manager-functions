@@ -19,9 +19,19 @@ __logger() {
   return 0
 }
 
+# $1 -> script name
+# $@ -> message
 __log_script_msg() {
-  __logger ${__NOTHING} "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] $1"
+  local __filename=$1
+  local __msg=${@/${__filename}/}
+
+  local __logfile=${_LOGDIR}/${__filename}.log-${_NOW_DATE}
+  local msg=${__NOTHING} "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__msg}"
+
+  __logger ${msg}
+  [ ${_LOGGING} ] && __logger ${msg} >> ${__logfile}
 }
+
 
 log_script_msg() {
   IFS=$'\n'
@@ -31,26 +41,7 @@ log_script_msg() {
   done
   ! ${_QUIET} &&  printf "\n"
   ${EMAIL} &&  printf "\n" >> "${_LOGFILE}"
-}  #log_script_msg
-
-unset_config() {
-  if [ -f "${1}" ]; then
-    IFS=$'\n'
-    for line in `/bin/cat ${1}`; do
-      if _is_not_comment "$line"; then
-        unset ${line%=*}
-      fi
-    done
-  fi
-}  #unset_config
-
-
-_is_not_comment() {
-  if [ "${1: 0:1}" == "#" ]; then
-    return 1
-  fi
-  return 0
-}  #_is_not_comment
+}
 
 
 _locked() {
@@ -67,7 +58,7 @@ _locked() {
   fi
 
   /bin/echo $$ > "${_PIDFILE}"
-}  #_locked
+}
 
 
 _send_email() {
@@ -89,7 +80,7 @@ _send_email() {
     /bin/echo ""
     /bin/cat "${message}"
   } | /usr/sbin/sendmail -oi -t
-}  #_send_email
+}
 
 
 _ssh_exec() {
@@ -119,18 +110,22 @@ _ssh_exec() {
   done
 
   [ "${port}" == "" ] && local port=22
-  if [ "${user}" == "" ]; then
+  [ "${user}" == "" ] && {
     local user=$(/usr/bin/id -un)
-    /usr/bin/printf "Use default user => ${user}\n"
-  fi
-  if [ "${host}" == "" ]; then
-    /usr/bin/printf "Error host not defined. Coming out of program\n"
-    exit 1
-  fi
-  if [ "${keyfile}" == "" ] || [ ! -f "${keyfile}" ]; then
-    /usr/bin/printf "Error keyfile not defined. Coming out of program\n"
-    exit 1
-  fi
+    __logger ${__WARN} Use default user => ${user}\n
+  }
+
+  [ "${host}" == "" ] {
+    __logger ${__FAIL} Error host not defined\n
+  }
+
+  [ "${keyfile}" == "" ] && {
+    __logger ${__FAIL} Error keyfile not defined\n
+  }
+
+  [ ! -f "${keyfile}" ] && {
+    __logger ${__FAIL} Error keyfile not found ${keyfile}\n
+  }
 
   /usr/bin/ssh -i "${keyfile}" -p ${port} ${user}@${host} "${cmd}"
-}  #_ssh_exec
+}

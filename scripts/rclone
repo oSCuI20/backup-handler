@@ -1,5 +1,6 @@
 #
-# backups local files and load to object storage using rclone tool
+# sync directories defined in BACKUP_DIR in s3 object
+# rclone tool need configuration access to write/read in bucket
 #
 
 run() {
@@ -17,7 +18,7 @@ run() {
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
-    printf "Finish backup $dir\n"
+    __log_script_msg Finish backup $dir\n
   done  #for dir in ${BACKUP_DIR[@]}
 
   __log_script_msg finish backup files ${HOSTNAME}\n
@@ -28,7 +29,7 @@ run() {
 
 checking_vars() {
   [ "${BACKUP_DIR}" == "" ] && {
-    __logger ${__FAIL} BACKUP_DIR not defined, cannot run the script
+    __log_script_msg ${__FAIL} BACKUP_DIR not defined, cannot run the script\n
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }

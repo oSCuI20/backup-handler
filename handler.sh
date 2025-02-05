@@ -8,11 +8,19 @@ __RETURNCODE_NOTHING=256
 __RETURNCODE_SCRIPT_NOTHING=255
 __RETURNCODE_SCRIPT_ERROR_ANY=254
 __RETURNCODE_SCRIPT_VARS_NOT_DEFINED=253
+__RETURNCODE_SCRIPT_CLEAN_OLD_BACKUPS=252
+__RETURNCODE_SSH_FAILED=251
+
+_RUN_BACKUP_RCLONE=false
+_RUN_BACKUP_MYSQL=false
+_RUN_BACKUP_POSTGRESQL=false
+_RUN_BACKUP_VBOX=false
 
 _NOW_DATE=$(/bin/date +%Y%m%d)
 
 _DEBUG=false
 _QUIET=true
+_LOGGING=true
 
 _ROOT="$(/bin/dirname $(/bin/readlink -f $0))"
 _CONFIG_FILE="${_ROOT}/config/backup.conf"
@@ -33,18 +41,18 @@ main() {
   load_fileconf ${_CONFIG_FILE}
 
   for script in $(ls ${_SCRIPTS_DIR}); do
-    ${_RUN_BACKUP_FILES} && {
-      . ${_SCRIPTS_DIR}/${script}
+    local logfile="${_LOGDIR}/${script}.log-${_NOW_DATE}"
 
-      checking_vars
+    . ${_SCRIPTS_DIR}/${script}
+
+    ${_RUN_BACKUP_FILES} && {
+      checking_vars >> ${logfile}
       [ $? -ne ${__RETURNCODE_OK} ] && continue
 
       run
     }
 
     ${_RUN_BACKUP_MYSQL} && {
-      . ${_SCRIPTS_DIR}/${script}
-
       checking_vars
       [ $? -ne ${__RETURNCODE_OK} ] && continue
 
@@ -69,11 +77,6 @@ load_fileconf() {
   }
 
   . $1
-
-  _RUN_BACKUP_FILES=${_RUN_BACKUP_FILES:-false }
-  _RUN_BACKUP_MYSQL=${_RUN_BACKUP_MYSQL:-false }
-  _RUN_BACKUP_POSTGRESQL=${_RUN_BACKUP_POSTGRESQL:-false }
-  _RUN_BACKUP_VBOX=${_RUN_BACKUP_VBOX:-false }
 
   [ -z "${RCLONE_BACKUP_REMOTE}" ] && {
     __logger ${__ERROR} RCLONE_BACKUP_REMOTE not define
