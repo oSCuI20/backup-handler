@@ -24,9 +24,9 @@ __logger() {
 __log_script_msg() {
   local __filename=$1
   local __msg=${@/${__filename}/}
-
   local __logfile=${_LOGDIR}/${__filename}.log-${_NOW_DATE}
-  local msg=${__NOTHING} "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__msg}"
+
+  local msg=${__NOTHING}"[$(/bin/date '+%Y-%m-%d %H:%M:%S')] [${__filename}] ${__msg}"
 
   __logger ${msg}
 
