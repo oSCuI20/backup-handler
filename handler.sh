@@ -52,12 +52,12 @@ main() {
       run
     }
 
-    ${_RUN_BACKUP_MYSQL} && {
-      checking_vars
-      [ $? -ne ${__RETURNCODE_OK} ] && continue
+    # ${_RUN_BACKUP_MYSQL} && {
+    #   checking_vars
+    #   [ $? -ne ${__RETURNCODE_OK} ] && continue
 
-      run
-    }
+    #   run
+    # }
 
       # ${_RUN_BACKUP_POSTGRESQL} && {
       # }
