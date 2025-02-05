@@ -29,7 +29,8 @@ __log_script_msg() {
   local msg=${__NOTHING} "[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__msg}"
 
   __logger ${msg}
-  [ ${_LOGGING} ] && __logger ${msg} >> ${__logfile}
+
+  ${_LOGGING} && __logger ${msg} >> ${__logfile}
 }
 
 
@@ -112,19 +113,19 @@ _ssh_exec() {
   [ "${port}" == "" ] && local port=22
   [ "${user}" == "" ] && {
     local user=$(/usr/bin/id -un)
-    __logger ${__WARN} Use default user => ${user}\n
+    __logger ${__WARN} "Use default user => ${user}\n"
   }
 
   [ "${host}" == "" ] {
-    __logger ${__FAIL} Error host not defined\n
+    __logger ${__FAIL} "host not defined\n"
   }
 
   [ "${keyfile}" == "" ] && {
-    __logger ${__FAIL} Error keyfile not defined\n
+    __logger ${__FAIL} "keyfile not defined\n"
   }
 
   [ ! -f "${keyfile}" ] && {
-    __logger ${__FAIL} Error keyfile not found ${keyfile}\n
+    __logger ${__FAIL} "keyfile not found ${keyfile}\n"
   }
 
   /usr/bin/ssh -i "${keyfile}" -p ${port} ${user}@${host} "${cmd}"
