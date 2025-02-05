@@ -4,12 +4,13 @@
 #
 
 __RETURNCODE_OK=0
-__RETURNCODE_NOTHING=256
-__RETURNCODE_SCRIPT_NOTHING=255
-__RETURNCODE_SCRIPT_ERROR_ANY=254
-__RETURNCODE_SCRIPT_VARS_NOT_DEFINED=253
-__RETURNCODE_SCRIPT_CLEAN_OLD_BACKUPS=252
-__RETURNCODE_SSH_FAILED=251
+__RETURNCODE_NOTHING=1256
+__RETURNCODE_SCRIPT_NOTHING=1255
+__RETURNCODE_SCRIPT_ERROR_ANY=1254
+__RETURNCODE_SCRIPT_VARS_NOT_DEFINED=1253
+__RETURNCODE_SCRIPT_CLEAN_OLD_BACKUPS=1252
+__RETURNCODE_SSH_FAILED=1251
+__RETURNCODE_SSH_FAILED_ARGUMENTS=1250
 
 _RUN_BACKUP_RCLONE=false
 _RUN_BACKUP_MYSQL=false
@@ -40,33 +41,31 @@ main() {
 
   load_fileconf ${_CONFIG_FILE}
 
-  for script in $(ls ${_SCRIPTS_DIR}); do
-    local logfile="${_LOGDIR}/${script}.log-${_NOW_DATE}"
+  # for script in $(ls ${_SCRIPTS_DIR}); do
 
-    . ${_SCRIPTS_DIR}/${script}
+  #   . ${_SCRIPTS_DIR}/${script}
 
-    ${_RUN_BACKUP_FILES} && {
-      checking_vars >> ${logfile}
-      [ $? -ne ${__RETURNCODE_OK} ] && continue
+  #   ${_RUN_BACKUP_FILES} && {
+  #     checking_vars
+  #     [ $? -ne ${__RETURNCODE_OK} ] && continue
 
-      run
-    }
+  #     run
+  #   }
 
-    # ${_RUN_BACKUP_MYSQL} && {
-    #   checking_vars
-    #   [ $? -ne ${__RETURNCODE_OK} ] && continue
+  #   # ${_RUN_BACKUP_MYSQL} && {
+  #   #   checking_vars
+  #   #   [ $? -ne ${__RETURNCODE_OK} ] && continue
 
-    #   run
-    # }
+  #   #   run
+  #   # }
 
-      # ${_RUN_BACKUP_POSTGRESQL} && {
-      # }
+  #     # ${_RUN_BACKUP_POSTGRESQL} && {
+  #     # }
 
-      # ${_RUN_BACKUP_VBOX} && {
-      # }
+  #     # ${_RUN_BACKUP_VBOX} && {
+  #     # }
 
-    echo "${_SCRIPTS_DIR}/${script}"
-  done
+  # done
 
 }  #main
 

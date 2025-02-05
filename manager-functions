@@ -34,7 +34,7 @@ __log_script_msg() {
 }
 
 
-_locked() {
+__locked() {
   [ ! -d "${_PIDFILE%/*}" ] && /bin/mkdir -p "${_PIDFILE%/*}"
   [ ! -f "${_PIDFILE}" ] && /bin/touch "${_PIDFILE}"
   local pid=$(/bin/cat "${_PIDFILE}")
@@ -50,7 +50,7 @@ _locked() {
 }
 
 
-_send_email() {
+__send_notification() {
   #_send_email "email_addr" "subject" "Message" "email_cc"
   local email_to="$1"
   local subject="$2"
@@ -71,11 +71,9 @@ _send_email() {
   } | /usr/sbin/sendmail -oi -t
 }
 
-
-_ssh_exec() {
+__ssh() {
   ##  _ssh_exec(). Execute remote command.
   ##  Params => --host=, --user=, --keyfile=, --cmd=
-  local retval=0
   while [ $# -ge 1 ]; do
     local key=$1
     case $key in
@@ -98,23 +96,38 @@ _ssh_exec() {
     shift
   done
 
-  [ "${port}" == "" ] && local port=22
-  [ "${user}" == "" ] && {
+  [ -z "${port}" ] && {
+    local port=22
+  }
+
+  [ -z "${user}" ] && {
     local user=$(/usr/bin/id -un)
-    __logger ${__WARN} "Use default user => ${user}\n"
+    __logger ${__WARN} Use default user => ${user}\n
   }
 
-  [ "${host}" == "" ] {
-    __logger ${__FAIL} "host not defined\n"
+  [ -z "${host}" ] && {
+    __logger ${__FAIL} host not defined\n
   }
 
-  [ "${keyfile}" == "" ] && {
-    __logger ${__FAIL} "keyfile not defined\n"
+  [ -z "${keyfile}" ] && {
+    __logger ${__FAIL} keyfile not defined\n
   }
 
-  [ ! -f "${keyfile}" ] && {
-    __logger ${__FAIL} "keyfile not found ${keyfile}\n"
+  [ -z "${keyfile}" ] && [ ! -f "${keyfile}" ] && {
+    __logger ${__FAIL} keyfile not found ${keyfile}\n
   }
 
-  /usr/bin/ssh -i "${keyfile}" -p ${port} ${user}@${host} "${cmd}"
+  [ -z "${cmd}" ] && {
+    __logger ${__FAIL} command not defined\n
+  }
+
+  local retval=${__RETURNCODE_SSH_FAILED_ARGUMENTS}
+
+  [ -n "${host}" ] && [ -n "${keyfile}" ] && [ -n "${cmd}" ] && {
+    /usr/bin/ssh -i "${keyfile}" -p ${port} ${user}@${host} "${cmd}"
+
+    local retval=$?
+  }
+
+  return ${retval}
 }

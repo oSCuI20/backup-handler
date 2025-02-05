@@ -13,6 +13,7 @@
 run() {
   ret=256
 
+  echo running vbox
   ${_RUN_BACKUP_VBOX} && {
     /bin/echo ""
     checking_global_vars
@@ -136,7 +137,7 @@ main_backup_client() {
 }  #main_backup_client
 
 
-checking_global_vars() {
+checking_vars() {
   if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
     printf "SSH_HOST not defined\n"
     exit 1
@@ -182,4 +183,4 @@ checking_global_vars() {
   if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
     DAYS=25
   fi
-}  #checking_global_vars
+}

@@ -10,10 +10,10 @@
 #                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db2.sql.gz
 run() {
   ret=256
-
+  echo running mysql
   ${_RUN_BACKUP_MYSQL} && {
     /bin/echo ""
-    checking_global_vars
+    checking_vars
     now=$(/bin/date +%Y%m%d)
 
     ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
