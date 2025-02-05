@@ -10,7 +10,7 @@ run() {
 
   __log_script_msg starting backup files for ${HOSTNAME}\n
 
-  ! ${_RUN_BACKUP_RCLONE} && {
+  ! ${_RUN_BACKUP_POSTGRESQL} && {
     __log_script_msg skipping backup files for ${HOSTNAME}\n
 
     return ${ret}

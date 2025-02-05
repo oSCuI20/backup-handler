@@ -45,12 +45,7 @@ main() {
 
     . ${_SCRIPTS_DIR}/${script}
 
-    ${_RUN_BACKUP_FILES} && {
-      checking_vars
-      [ $? -ne ${__RETURNCODE_OK} ] && continue
-
-      run
-    }
+    run
 
     # ${_RUN_BACKUP_MYSQL} && {
     #   checking_vars

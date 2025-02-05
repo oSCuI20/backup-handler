@@ -142,49 +142,25 @@ main_backup_client() {
 
 
 checking_vars() {
-  if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
-    printf "SSH_HOST not defined\n"
-    exit 1
-  fi
+  [ -z "${VBOX_VM}" ] && {
+    __log_script_msg ${__FAIL} VBOX_VM not defined\n
 
-  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    printf "SSH_USER not defined\n"
-    exit 1
-  fi
+    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
 
-  if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
-     [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
-    printf "SSH_PORT not defined or value is not numeric\n"
-    exit 1
-  fi
+  [ -z "${VBOX_PATH}" ] && {
+    __log_script_msg ${__FAIL} VBOX_PATH not defined\n
 
-  if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
-     [ ! -f "${SSH_KEY}" ]; then
-    printf "SSH_KEY not defined or file not exists\n"
-    exit 1
-  fi
+    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
 
-  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    printf "SSH_USER not defined"
-    exit 1
-  fi
-
-  if [ -z "${VBOX_VM}" ] || [ "${VBOX_VM}" == "" ]; then
-    printf "VBOX_VM not defined\n"
-    exit 1
-  fi
-
-  if [ -z "${VBOX_PATH}" ] || [ "${VBOX_PATH}" == "" ]; then
-    printf "VBOX_PATH not defined\n"
-    exit 1
-  fi
-
-  if [ -z "${TEMPDIR}" ] || [ "${TEMPDIR}" == "" ] || \
-     [ ! -d "${TEMPDIR}" ]; then
+  [ -z "${TEMPDIR}" ] && {
     TEMPDIR=/var/tmp
-  fi
+  }
 
-  if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
+  [ -z "${DAYS}" ] && {
     DAYS=25
-  fi
+
+    __log_script_msg ${__WARN} DAYS not defined, using default ${DAYS}\n
+  }
 }

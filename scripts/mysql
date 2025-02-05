@@ -128,33 +128,6 @@ main_backup_client() {
 
 
 checking_vars() {
-  if [ -z "${SSH_HOST}" ] || [ "${SSH_HOST}" == "" ]; then
-    printf "SSH_HOST not defined\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    printf "SSH_USER not defined\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_PORT}" ] || [ "${SSH_PORT}" == "" ] || \
-     [[ ! "${SSH_PORT}" =~ [0-9]+ ]]; then
-    printf "SSH_PORT not defined or value is not numeric\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_KEY}" ] || [ "${SSH_KEY}" == "" ] || \
-     [ ! -f "${SSH_KEY}" ]; then
-    printf "SSH_KEY not defined or file not exists\n"
-    exit 1
-  fi
-
-  if [ -z "${SSH_USER}" ] || [ "${SSH_USER}" == "" ]; then
-    printf "SSH_USER not defined"
-    exit 1
-  fi
-
   if [ -z "${MYSQL_USER}" ] || [ "${MYSQL_USER}" == "" ]; then
     printf "MYSQL_USER not defined"
     exit 1

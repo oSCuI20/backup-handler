@@ -16,6 +16,8 @@ run() {
     return ${ret}
   }
 
+  checking_vars
+
   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
 
   for dir in ${BACKUP_DIR[@]}; do
@@ -35,21 +37,21 @@ run() {
 
 
 checking_vars() {
-  [ "${BACKUP_DIR}" == "" ] && {
+  [ -z "${BACKUP_DIR}" ] && {
     __log_script_msg ${__FAIL} BACKUP_DIR not defined, cannot run the script\n
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
-  [ "${TEMPDIR}" == "" ] && {
+  [ -z "${TEMPDIR}" ] && {
     TEMPDIR=/var/tmp
   }
 
-  if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
+  [ -z "${DAYS}" ] && {
     DAYS=25
 
     __log_script_msg ${__WARN} DAYS not defined, using default ${DAYS}\n
-  fi
+  }
 
   return ${__RETURNCODE_OK}
 }
