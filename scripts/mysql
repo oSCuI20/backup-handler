@@ -8,10 +8,10 @@ run() {
   ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg "starting MySQL backups for ${HOSTNAME}\n"
+  __log_script_msg mysql "starting MySQL backups for ${HOSTNAME}\n"
 
   ! ${_RUN_BACKUP_MYSQL} && {
-    __log_script_msg "skipping MySQL backups for ${HOSTNAME}\n"
+    __log_script_msg mysql "skipping MySQL backups for ${HOSTNAME}\n"
 
     return ${ret}
   }
@@ -129,13 +129,13 @@ main_backup_client() {
 
 checking_vars() {
   [ -z "${MYSQL_USER}" ] && {
-    __log_script_msg "${__FAIL} MYSQL_USER not defined\n"
+    __log_script_msg mysql "${__FAIL} MYSQL_USER not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ -z "${MYSQL_PASS}" ] && {
-    __log_script_msg "${__FAIL} MYSQL_PASS not defined\n"
+    __log_script_msg mysql "${__FAIL} MYSQL_PASS not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
@@ -143,7 +143,7 @@ checking_vars() {
   [ -z "${MYSQL_PORT}" ] && {
     MYSQL_PORT=3306
 
-    __log_script_msg "${__WARN} MYSQL_PORT not defined, set default port ${MYSQL_PORT}\n"
+    __log_script_msg mysql "${__WARN} MYSQL_PORT not defined, set default port ${MYSQL_PORT}\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
@@ -151,6 +151,6 @@ checking_vars() {
   [ -z "${MYSQL_IGNORE}" ] && [ -n "${MYSQL_DATABASES}" ] && {
     MYSQL_IGNORE="(information_schema|performance_schema|mysql)"
 
-    __log_script_msg "${__WARN} MYSQL_IGNORE not defined, ignore default database ${MYSQL_IGNORE}\n"
+    __log_script_msg mysql "${__WARN} MYSQL_IGNORE not defined, ignore default database ${MYSQL_IGNORE}\n"
   }
 }

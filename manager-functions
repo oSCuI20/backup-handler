@@ -22,11 +22,11 @@ __logger() {
 # $1 -> script name
 # $@ -> message
 __log_script_msg() {
-  local __filename=$1
-  local __msg=${@/${__filename}/}
-  local __logfile=${_LOGDIR}/${__filename}.log-${_NOW_DATE}
+  local __script_name=$1
+  local __msg=${@/${__script_name}/}
+  local __logfile=${_LOGDIR}/${__script_name}.log-${_NOW_DATE}
 
-  local msg=${__NOTHING}"[$(/bin/date '+%Y-%m-%d %H:%M:%S')] [${__filename}] ${__msg}"
+  local msg=${__NOTHING}"[$(/bin/date '+%Y-%m-%d %H:%M:%S')] [${__script_name}] ${__msg}"
 
   __logger ${msg}
 
