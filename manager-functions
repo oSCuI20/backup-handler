@@ -12,7 +12,7 @@ __logger() {
   local __icon=$1
   local __msg=${@/${__icon}/}
 
-  printf " ${__icon} ${__msg[@]}"
+  echo -en "${__icon} ${__msg[@]}"
 
   [ "${__icon}" == "${__ERROR}" ] && exit 1
 

@@ -41,15 +41,5 @@ checking_vars() {
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
-  [ "${TEMPDIR}" == "" ] && {
-    TEMPDIR=/var/tmp
-  }
-
-  if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
-    DAYS=25
-
-    __log_script_msg ${__WARN} DAYS not defined, using default ${DAYS}\n
-  fi
-
   return ${__RETURNCODE_OK}
 }

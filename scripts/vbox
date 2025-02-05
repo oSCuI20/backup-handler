@@ -10,10 +10,10 @@ run() {
   ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg starting VirtualBox VM for ${HOSTNAME}\n
+  __log_script_msg "starting VirtualBox VM for ${HOSTNAME}\n"
 
   ! ${_RUN_BACKUP_VBOX} && {
-    __log_script_msg skipping VirtualBox VM for ${HOSTNAME}\n
+    __log_script_msg "skipping VirtualBox VM for ${HOSTNAME}\n"
 
     return ${ret}
   }
@@ -143,24 +143,14 @@ main_backup_client() {
 
 checking_vars() {
   [ -z "${VBOX_VM}" ] && {
-    __log_script_msg ${__FAIL} VBOX_VM not defined\n
+    __log_script_msg "${__FAIL} VBOX_VM not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ -z "${VBOX_PATH}" ] && {
-    __log_script_msg ${__FAIL} VBOX_PATH not defined\n
+    __log_script_msg "${__FAIL} VBOX_PATH not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
-  }
-
-  [ -z "${TEMPDIR}" ] && {
-    TEMPDIR=/var/tmp
-  }
-
-  [ -z "${DAYS}" ] && {
-    DAYS=25
-
-    __log_script_msg ${__WARN} DAYS not defined, using default ${DAYS}\n
   }
 }
