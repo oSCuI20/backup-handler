@@ -9,10 +9,8 @@
 #                                    ARCHIVEROOT/hostname/vbox/YYYYMMDD/vbox01.tar.gz
 #                                    ARCHIVEROOT/hostname/vbox/YYYYMMDD/vbox02.tar.gz
 
-. ${_CONFIGDIR}/manager-functions
 
-
-main() {
+run() {
   ret=256
 
   ${_RUN_BACKUP_VBOX} && {
@@ -185,6 +183,3 @@ checking_global_vars() {
     DAYS=25
   fi
 }  #checking_global_vars
-
-
-main

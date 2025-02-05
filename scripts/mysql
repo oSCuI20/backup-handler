@@ -8,10 +8,6 @@
 # path backups as client: ARCHIVEROOT/hostname/mysql
 #                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db1.sql.gz
 #                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db2.sql.gz
-
-. ${_CONFIGDIR}/manager-functions
-
-
 run() {
   ret=256
 
@@ -183,6 +179,3 @@ checking_vars() {
     DAYS=25
   fi
 }  #checking_global_vars
-
-
-main
