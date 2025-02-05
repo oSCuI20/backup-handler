@@ -16,37 +16,37 @@ run() {
     return ${ret}
   }
 
-  ${_RUN_BACKUP_MYSQL} && {
-    /bin/echo ""
-    checking_vars
-    now=$(/bin/date +%Y%m%d)
+  # ${_RUN_BACKUP_MYSQL} && {
+  #   /bin/echo ""
+  #   checking_vars
+  #   now=$(/bin/date +%Y%m%d)
 
-    ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
+  #   ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
 
-    backup_dir="${ARCHIVEROOT}/${HOSTNAME}/mysql"
-    sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+  #   backup_dir="${ARCHIVEROOT}/${HOSTNAME}/mysql"
+  #   sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
 
-    printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+  #   printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
 
-    db_ignore=${MYSQL_IGNORE}
-    m_options="-h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASS -P ${MYSQL_PORT}"
-    d_options="${m_options} --single-transaction --triggers --routines"
-    g_options="--best --force --quiet"
-    storage="${backup_dir}/${now}"
+  #   db_ignore=${MYSQL_IGNORE}
+  #   m_options="-h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASS -P ${MYSQL_PORT}"
+  #   d_options="${m_options} --single-transaction --triggers --routines"
+  #   g_options="--best --force --quiet"
+  #   storage="${backup_dir}/${now}"
 
-    ${SERVER} && main_backup_server || main_backup_client
-    ret=$?
+  #   ${SERVER} && main_backup_server || main_backup_client
+  #   ret=$?
 
-    ${SERVER} && {
-      /bin/du -sh ${backup_dir}
-    } || {
-      _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
-    }
+  #   ${SERVER} && {
+  #     /bin/du -sh ${backup_dir}
+  #   } || {
+  #     _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
+  #   }
 
-    printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
-  }  #${BACKUP_MYSQL}
+  #   printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+  # }  #${BACKUP_MYSQL}
 
-  exit ${ret}
+  # exit ${ret}
 }  #main
 
 
