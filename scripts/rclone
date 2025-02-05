@@ -3,11 +3,18 @@
 # rclone tool need configuration access to write/read in bucket
 #
 
+
 run() {
   ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg starting backup files ${HOSTNAME}\n
+  __log_script_msg starting backup files for ${HOSTNAME}\n
+
+  ! ${_RUN_BACKUP_RCLONE} && {
+    __log_script_msg skipping backup files for ${HOSTNAME}\n
+
+    return ${ret}
+  }
 
   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
 

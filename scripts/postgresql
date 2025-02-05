@@ -1,0 +1,55 @@
+#
+# Postgresql backups
+#
+#
+
+
+run() {
+  ret=${__RETURNCODE_SCRIPT_NOTHING}
+  HOSTNAME="$(/bin/hostname -f)"
+
+  __log_script_msg starting backup files for ${HOSTNAME}\n
+
+  ! ${_RUN_BACKUP_RCLONE} && {
+    __log_script_msg skipping backup files for ${HOSTNAME}\n
+
+    return ${ret}
+  }
+
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
+
+  for dir in ${BACKUP_DIR[@]}; do
+    main="${backup_dir}/main${dir}"
+    increment="${backup_dir}/increment/${__NOW_DATE}"
+    rclone_options=("--backup-dir=${increment}")
+
+    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
+
+    __log_script_msg Finish backup $dir\n
+  done  #for dir in ${BACKUP_DIR[@]}
+
+  __log_script_msg finish backup files ${HOSTNAME}\n
+
+  return ${ret}
+}  #run
+
+
+checking_vars() {
+  [ "${BACKUP_DIR}" == "" ] && {
+    __log_script_msg ${__FAIL} BACKUP_DIR not defined, cannot run the script\n
+
+    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
+
+  [ "${TEMPDIR}" == "" ] && {
+    TEMPDIR=/var/tmp
+  }
+
+  if [ -z "${DAYS}" ] || [ "${DAYS}" == "" ]; then
+    DAYS=25
+
+    __log_script_msg ${__WARN} DAYS not defined, using default ${DAYS}\n
+  fi
+
+  return ${__RETURNCODE_OK}
+}

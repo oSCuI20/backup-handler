@@ -1,16 +1,21 @@
-#!/bin/bash
 #
-# Eduardo Banderas Alba
-# path backups as server: ARCHIVEROOT/SSH_HOST/mysql
-#                         ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db1.sql.gz
-#                         ARCHIVEROOT/SSH_HOST/mysql/YYYYMMDD/db2.sql.gz
+# MySQL backups
 #
-# path backups as client: ARCHIVEROOT/hostname/mysql
-#                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db1.sql.gz
-#                         ARCHIVEROOT/hostname/mysql/YYYYMMDD/db2.sql.gz
+#
+
+
 run() {
-  ret=256
-  echo running mysql
+  ret=${__RETURNCODE_SCRIPT_NOTHING}
+  HOSTNAME="$(/bin/hostname -f)"
+
+  __log_script_msg starting MySQL backups for ${HOSTNAME}\n
+
+  ! ${_RUN_BACKUP_MYSQL} && {
+    __log_script_msg skipping MySQL backups for ${HOSTNAME}\n
+
+    return ${ret}
+  }
+
   ${_RUN_BACKUP_MYSQL} && {
     /bin/echo ""
     checking_vars

@@ -1,19 +1,23 @@
-#!/bin/bash
 #
-# Eduardo Banderas Alba
-# path backups if execute as server: ARCHIVEROOT/SSH_HOST/vbox
-#                                    ARCHIVEROOT/SSH_HOST/vbox/YYYYMMDD/vbox01.tar.gz
-#                                    ARCHIVEROOT/SSH_HOST/vbox/YYYYMMDD/vbox02.tar.gz
-
-# path backups if execute as client: ARCHIVEROOT/hostname/vbox
-#                                    ARCHIVEROOT/hostname/vbox/YYYYMMDD/vbox01.tar.gz
-#                                    ARCHIVEROOT/hostname/vbox/YYYYMMDD/vbox02.tar.gz
+# VirtualBox backups VM
+#
+#
 
 
 run() {
   ret=256
 
-  echo running vbox
+  ret=${__RETURNCODE_SCRIPT_NOTHING}
+  HOSTNAME="$(/bin/hostname -f)"
+
+  __log_script_msg starting VirtualBox VM for ${HOSTNAME}\n
+
+  ! ${_RUN_BACKUP_VBOX} && {
+    __log_script_msg skipping VirtualBox VM for ${HOSTNAME}\n
+
+    return ${ret}
+  }
+
   ${_RUN_BACKUP_VBOX} && {
     /bin/echo ""
     checking_global_vars
