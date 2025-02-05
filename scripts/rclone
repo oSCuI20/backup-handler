@@ -45,4 +45,4 @@ checking_vars() {
   fi
 
   return ${__RETURNCODE_OK}
-}  #checking_global_vars
+}
