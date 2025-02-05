@@ -34,17 +34,6 @@ __log_script_msg() {
 }
 
 
-log_script_msg() {
-  IFS=$'\n'
-  for line in $1; do
-    ! ${_QUIET} && printf " * ${line}\n"
-    ${EMAIL} && printf " * ${line}\n" >> "${_LOGFILE}"
-  done
-  ! ${_QUIET} &&  printf "\n"
-  ${EMAIL} &&  printf "\n" >> "${_LOGFILE}"
-}
-
-
 _locked() {
   [ ! -d "${_PIDFILE%/*}" ] && /bin/mkdir -p "${_PIDFILE%/*}"
   [ ! -f "${_PIDFILE}" ] && /bin/touch "${_PIDFILE}"
@@ -54,8 +43,7 @@ _locked() {
 
   if /usr/bin/printf "${process}" | /bin/grep -q "${pid}" && \
      [ -n "${pid}" ]; then
-    log_failure_msg "Found a proccess ${pid}"
-    exit 1
+    __logger ${__ERROR} "Found a proccess ${pid}\n"
   fi
 
   /bin/echo $$ > "${_PIDFILE}"
