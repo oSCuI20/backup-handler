@@ -41,31 +41,31 @@ main() {
 
   load_fileconf ${_CONFIG_FILE}
 
-  # for script in $(ls ${_SCRIPTS_DIR}); do
+  for script in $(ls ${_SCRIPTS_DIR}); do
 
-  #   . ${_SCRIPTS_DIR}/${script}
+    . ${_SCRIPTS_DIR}/${script}
 
-  #   ${_RUN_BACKUP_FILES} && {
-  #     checking_vars
-  #     [ $? -ne ${__RETURNCODE_OK} ] && continue
+    ${_RUN_BACKUP_FILES} && {
+      checking_vars
+      [ $? -ne ${__RETURNCODE_OK} ] && continue
 
-  #     run
-  #   }
+      run
+    }
 
-  #   # ${_RUN_BACKUP_MYSQL} && {
-  #   #   checking_vars
-  #   #   [ $? -ne ${__RETURNCODE_OK} ] && continue
+    # ${_RUN_BACKUP_MYSQL} && {
+    #   checking_vars
+    #   [ $? -ne ${__RETURNCODE_OK} ] && continue
 
-  #   #   run
-  #   # }
+    #   run
+    # }
 
-  #     # ${_RUN_BACKUP_POSTGRESQL} && {
-  #     # }
+      # ${_RUN_BACKUP_POSTGRESQL} && {
+      # }
 
-  #     # ${_RUN_BACKUP_VBOX} && {
-  #     # }
+      # ${_RUN_BACKUP_VBOX} && {
+      # }
 
-  # done
+  done
 
 }  #main
 
