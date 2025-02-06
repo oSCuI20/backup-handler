@@ -10,7 +10,7 @@ run() {
 
   __log_script_msg rclone starting backup files for ${HOSTNAME}\n
 
-  ! ${_RUN_BACKUP_RCLONE} && {
+  ! ${_RUN_BACKUP_SYNC} && {
     __log_script_msg rclone skipping backup files for ${HOSTNAME}\n
 
     return ${ret}
@@ -27,13 +27,13 @@ run() {
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
-    __log_script_msg rclone Finish backup $dir\n
-  done  #for dir in ${BACKUP_DIR[@]}
+    __log_script_msg rclone Finish backup ${dir}\n
+  done
 
-  __log_script_msg finish backup files ${HOSTNAME}\n
+  __log_script_msg rclone finish backup files ${HOSTNAME}\n
 
   return ${ret}
-}  #run
+}
 
 
 checking_vars() {

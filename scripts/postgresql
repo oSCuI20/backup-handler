@@ -16,22 +16,19 @@ run() {
     return ${ret}
   }
 
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/postgresql"
 
   for dir in ${BACKUP_DIR[@]}; do
     main="${backup_dir}/main${dir}"
     increment="${backup_dir}/increment/${__NOW_DATE}"
-    rclone_options=("--backup-dir=${increment}")
 
-    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
-
-    __log_script_msg postgresql Finish backup $dir\n
+    __log_script_msg postgresql finish backup ${dir}\n
   done  #for dir in ${BACKUP_DIR[@]}
 
   __log_script_msg postgresql finish backup files ${HOSTNAME}\n
 
   return ${ret}
-}  #run
+}
 
 
 checking_vars() {
