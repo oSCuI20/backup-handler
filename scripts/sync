@@ -8,10 +8,10 @@ run() {
   ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg rclone starting backup files for ${HOSTNAME}\n
+  __log_script_msg rclone "starting backup files for ${HOSTNAME}\n"
 
   ! ${_RUN_BACKUP_SYNC} && {
-    __log_script_msg rclone skipping backup files for ${HOSTNAME}\n
+    __log_script_msg rclone "skipping backup files for ${HOSTNAME}\n"
 
     return ${ret}
   }
@@ -27,10 +27,10 @@ run() {
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
 
-    __log_script_msg rclone Finish backup ${dir}\n
+    __log_script_msg rclone "Finish backup ${dir}\n"
   done
 
-  __log_script_msg rclone finish backup files ${HOSTNAME}\n
+  __log_script_msg rclone "finish backup files ${HOSTNAME}\n"
 
   return ${ret}
 }
@@ -38,7 +38,7 @@ run() {
 
 checking_vars() {
   [ -z "${BACKUP_DIR}" ] && {
-    __log_script_msg rclone ${__FAIL} BACKUP_DIR not defined, cannot run the script\n
+    __log_script_msg rclone "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
