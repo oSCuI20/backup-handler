@@ -1,0 +1,49 @@
+#
+# upload files defined in BACKUP_FILES to s3 object
+# if BACKUP_DIR is defined compress directory and upload, the name of files:
+#    directory: /var/www/site1 -> var.www.site1.tar.gz
+# rclone tool need configuration access to write/read in bucket
+#
+
+
+run() {
+  ret=${__RETURNCODE_SCRIPT_NOTHING}
+  HOSTNAME="$(/bin/hostname -f)"
+
+  __log_script_msg files "starting backup files for ${HOSTNAME}\n"
+
+  ! ${_RUN_BACKUP_FILES} && {
+    __log_script_msg files "skipping backup files for ${HOSTNAME}\n"
+
+    return ${ret}
+  }
+
+#   checking_vars
+
+#   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
+
+#   for dir in ${BACKUP_DIR[@]}; do
+#     main="${backup_dir}/main${dir}"
+#     increment="${backup_dir}/increment/${__NOW_DATE}"
+#     rclone_options=("--backup-dir=${increment}")
+
+#     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
+
+#     __log_script_msg rclone "Finish backup ${dir}\n"
+#   done
+
+#   __log_script_msg rclone "finish backup files ${HOSTNAME}\n"
+
+  return ${ret}
+}
+
+
+checking_vars() {
+  [ -z "${BACKUP_DIR}" ] && {
+    __log_script_msg rclone "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
+
+    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
+
+  return ${__RETURNCODE_OK}
+}
