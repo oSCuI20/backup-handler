@@ -19,6 +19,7 @@ __logger() {
   return 0
 }
 
+
 # $1 -> script name
 # $@ -> message
 __log_script_msg() {
@@ -70,6 +71,7 @@ __send_notification() {
     /bin/cat "${message}"
   } | /usr/sbin/sendmail -oi -t
 }
+
 
 __ssh() {
   ##  _ssh_exec(). Execute remote command.
@@ -130,4 +132,10 @@ __ssh() {
   }
 
   return ${retval}
+}
+
+__RUNNING=(DAILY WEEKLY MONTHLY QUARTERLY)
+# $1 -> when running
+script_must_running() {
+  return
 }

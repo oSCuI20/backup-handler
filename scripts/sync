@@ -10,7 +10,7 @@ run() {
 
   __log_script_msg sync "starting synchronization for ${HOSTNAME}\n"
 
-  ! ${_RUN_BACKUP_SYNC} && {
+  ! ${_RUN_BACKUP_SYNC} && {  # skip synchronization
     __log_script_msg sync "skipping synchronization for ${HOSTNAME}\n"
 
     return ${ret}
@@ -30,7 +30,7 @@ run() {
     __log_script_msg sync "${dir} directory synchronization completed\n"
   done
 
-  __log_script_msg sync "finish backup files ${HOSTNAME}\n"
+  __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
 
   return ${ret}
 }
