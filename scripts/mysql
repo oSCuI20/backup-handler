@@ -102,9 +102,9 @@ checking_vars() {
     __log_script_msg mysql "${__WARN} MYSQL_PORT not defined, set default port ${MYSQL_PORT}\n"
   }
 
-  [ -z "${MYSQL_DATABASES_IGNORE}" ] && {
-    MYSQL_DATABASES_IGNORE="(information_schema|performance_schema|mysql)"
+  [ -z "${MYSQL_DATABASES_IGNORE[@]}" ] && {
+    MYSQL_DATABASES_IGNORE=(information_schema performance_schema mysql)
 
-    __log_script_msg mysql "${__WARN} MYSQL_DATABASES_IGNORE not defined, ignore default database ${MYSQL_DATABASES_IGNORE}\n"
+    __log_script_msg mysql "${__WARN} MYSQL_DATABASES_IGNORE not defined, ignore default database ${MYSQL_DATABASES_IGNORE[@]}\n"
   }
 }
