@@ -66,7 +66,7 @@ run() {
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${_to}
 
-    /bin/rm -fv ${_tmpdir}/${database}.sql.gz
+    __log_script_msg mysql $(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)
   done
 }
 
