@@ -10,7 +10,7 @@ __NOTHING=${__INFO}
 ## Logging functions
 __logger() {
   local __icon=$1
-  local __msg=${@/${__icon}/}
+  local __msg=(${@/${__icon}/})
 
   echo -en "${__icon} ${__msg[@]}"
 
