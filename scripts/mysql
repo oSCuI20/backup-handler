@@ -48,13 +48,11 @@ run() {
 
       return ${__RETURNCODE_SCRIPT_ERROR_ANY}
     }
-
-    [ -z "${MYSQL_DATABASES_IGNORE[@]}" ] && {
-      for ignore in ${MYSQL_DATABASES_IGNORE[@]}; do
-        local _databases=(${_databases[@]/${ignore}/})
-      done
-    }
   }
+
+  for ignore in ${MYSQL_DATABASES_IGNORE[@]}; do
+    local _databases=(${_databases[@]/${ignore}/})
+  done
 
   __log_script_msg mysql "running backup of databases ${_databases[@]}\n"
 
