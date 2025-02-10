@@ -49,7 +49,7 @@ run() {
       return ${__RETURNCODE_SCRIPT_ERROR_ANY}
     }
 
-    [ -n "${MYSQL_DATABASES_IGNORE[@]}" ] && {
+    [ -z "${MYSQL_DATABASES_IGNORE[@]}" ] && {
       for ignore in ${MYSQL_DATABASES_IGNORE[@]}; do
         local _databases=(${_databases[@]/${ignore}/})
       done
