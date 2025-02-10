@@ -5,7 +5,7 @@ __FAIL=Failure:
 __ERROR=Error:
 __WARN=Warning:
 __INFO=Info:
-__NOTHING=
+__NOTHING=${__INFO}
 
 ## Logging functions
 __logger() {
