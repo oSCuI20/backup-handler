@@ -16,41 +16,72 @@ run() {
     return ${ret}
   }
 
-  # ${_RUN_BACKUP_MYSQL} && {
-  #   /bin/echo ""
-  #   checking_vars
-  #   now=$(/bin/date +%Y%m%d)
+  checking_vars
 
-  #   ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql/${__NOW_DATE}"
 
-  #   backup_dir="${ARCHIVEROOT}/${HOSTNAME}/mysql"
-  #   sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+  local _mysql_options=(
+    -h ${MYSQL_HOST}
+    -u ${MYSQL_USER}
+    -P ${MYSQL_PORT}
+    -p${MYSQL_PASS}
+  )
+  local _dump_options=(
+    --single-transaction
+    --triggers
+    --routines
+  )
+  local _gzip_options=(
+    --best
+    --force
+    --quiet
+  )
+  local _tmpdir=${TEMPDIR:-/var/tmp}
 
-  #   printf "Starting MySQL backup, ${HOSTNAME} at `/bin/date`\n"
+  local _databases=(${MYSQL_DATABASES[@]})
 
-  #   db_ignore=${MYSQL_IGNORE}
-  #   m_options="-h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASS -P ${MYSQL_PORT}"
-  #   d_options="${m_options} --single-transaction --triggers --routines"
-  #   g_options="--best --force --quiet"
-  #   storage="${backup_dir}/${now}"
+  [ -z "${_databases[@]}" ] && {
+    local _databases=$(/usr/bin/mysql -N ${_mysql_options[@]} -e "SHOW DATABASES;")
 
-  #   ${SERVER} && main_backup_server || main_backup_client
-  #   ret=$?
+    [ $? -ne 0 ] && {
+      __log_script_msg mysql "${__FAIL} ${_databases[@]}\n"
 
-  #   ${SERVER} && {
-  #     /bin/du -sh ${backup_dir}
-  #   } || {
-  #     _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
-  #   }
+      return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+    }
 
-  #   printf "Finish MySQL backup, ${HOSTNAME} at `/bin/date`\n"
-  # }  #${BACKUP_MYSQL}
+    [ -n "${MYSQL_DATABASES_IGNORE[@]}" ] && {
+      for ignore in ${MYSQL_DATABASES_IGNORE[@]}; do
+        local _databases=(${_databases[@]/${ignore}/})
+      done
+    }
+  }
 
-  # exit ${ret}
-}  #main
+  __log_script_msg mysql "running backup of databases ${_databases[@]}\n"
+
+  for database in ${_databases[@]}; do
+    local _to=${backup_dir}/${database}.sql.gz
+
+    /usr/bin/mysqldump ${_mysql_options[@]} ${_dump_options[@]} --databases ${database} | \
+      /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
+
+    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${_to}
+  done
+}
 
 
 checking_vars() {
+  [ ! -f /usr/bin/mysql ]  && {
+    __log_script_msg mysql "${__FAIL} /usr/bin/mysql command not found\n"
+
+    return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+  }
+
+  [ ! -f /usr/bin/mysqldump ]  && {
+    __log_script_msg mysql "${__FAIL} /usr/bin/mysqldump command not found\n"
+
+    return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+  }
+
   [ -z "${MYSQL_USER}" ] && {
     __log_script_msg mysql "${__FAIL} MYSQL_USER not defined\n"
 
@@ -67,13 +98,11 @@ checking_vars() {
     MYSQL_PORT=3306
 
     __log_script_msg mysql "${__WARN} MYSQL_PORT not defined, set default port ${MYSQL_PORT}\n"
-
-    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
-  [ -z "${MYSQL_IGNORE}" ] && [ -n "${MYSQL_DATABASES}" ] && {
-    MYSQL_IGNORE="(information_schema|performance_schema|mysql)"
+  [ -z "${MYSQL_DATABASES_IGNORE}" ] && {
+    MYSQL_DATABASES_IGNORE="(information_schema|performance_schema|mysql)"
 
-    __log_script_msg mysql "${__WARN} MYSQL_IGNORE not defined, ignore default database ${MYSQL_IGNORE}\n"
+    __log_script_msg mysql "${__WARN} MYSQL_DATABASES_IGNORE not defined, ignore default database ${MYSQL_DATABASES_IGNORE}\n"
   }
 }
