@@ -16,26 +16,107 @@ run() {
     return ${ret}
   }
 
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/postgresql"
+  checking_vars
 
-  for dir in ${BACKUP_DIR[@]}; do
-    main="${backup_dir}/main${dir}"
-    increment="${backup_dir}/increment/${__NOW_DATE}"
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/postgresql/${__NOW_DATE}"
 
-    __log_script_msg postgresql "finish backup ${dir}\n"
-  done  #for dir in ${BACKUP_DIR[@]}
+  local _psql_options=(
+    -h ${POSTGRESQL_HOST}
+    -U ${POSTGRESQL_USER}
+    -p ${POSTGRESQL_PORT}
+  )
+  local _dump_options=(
+    --clean
+  )
+  local _gzip_options=(
+    --best
+    --force
+    --quiet
+  )
+  local _tmpdir=${TEMPDIR:-/var/tmp}
 
-  __log_script_msg postgresql "finish backup files ${HOSTNAME}\n"
+  local _databases=(${POSTGRESQL_DATABASES[@]})
+
+  [ -z "${_databases[@]}" ] && {
+    local _databases=$(/usr/bin/psql -t -U postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;")
+
+    [ $? -ne 0 ] && {
+      __log_script_msg postgresql "${__FAIL} ${_databases[@]}\n"
+
+      return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+    }
+  }
+
+  for ignore in ${POSTGRESQL_DATABASES_IGNORE[@]}; do
+    local _databases=(${_databases[@]/${ignore}/})
+  done
+
+  __log_script_msg postgresql "running backup of databases ${_databases[@]}\n"
+
+  ret=${__RETURNCODE_OK}
+  for database in ${_databases[@]}; do
+    local _to=${backup_dir}/${database}.sql.gz
+
+    /usr/bin/pg_dump ${_psql_options[@]} ${_dump_options[@]} --databases ${database} | \
+      /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
+
+    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${_to}
+
+    [ $? -ne 0 ] && {
+      __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
+
+      ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      continue
+    }
+
+    __log_script_msg mysql $(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)
+  done
 
   return ${ret}
 }
 
 
 checking_vars() {
-  [ "${BACKUP_DIR}" == "" ] && {
-    __log_script_msg postgresql "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
+  [ ! -f /usr/bin/psql ]  && {
+    __log_script_msg psql "${__FAIL} /usr/bin/psql command not found\n"
+
+    return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+  }
+
+  [ ! -f /usr/bin/pg_dump ]  && {
+    __log_script_msg psql "${__FAIL} /usr/bin/pg_dump command not found\n"
+
+    return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+  }
+
+  [ -z "${POSTGRESQL_USER}" ] && {
+    __log_script_msg psql "${__FAIL} POSTGRESQL_USER not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
+
+  [ -z "${POSTGRESQL_PASS}" ] && {
+    __log_script_msg psql "${__FAIL} POSTGRESQL_PASS not defined\n"
+
+    return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
+
+  [ -z "${POSTGRESQL_HOST}" ] && {
+    POSTGRESQL_HOST=localhost
+
+    __log_script_msg psql "${__WARN} POSTGRESQL_HOST not defined, set default port ${POSTGRESQL_HOST}\n"
+  }
+
+  [ -z "${POSTGRESQL_PORT}" ] && {
+    POSTGRESQL_PORT=3306
+
+    __log_script_msg psql "${__WARN} POSTGRESQL_PORT not defined, set default port ${POSTGRESQL_PORT}\n"
+  }
+
+  [ -z "${POSTGRESQL_DATABASES_IGNORE[@]}" ] && {
+    POSTGRESQL_DATABASES_IGNORE=(postgres template0 template1)
+
+    __log_script_msg psql "${__WARN} POSTGRESQL_DATABASES_IGNORE not defined, ignore default database ${POSTGRESQL_DATABASES_IGNORE[@]}\n"
   }
 
   return ${__RETURNCODE_OK}

@@ -56,6 +56,7 @@ run() {
 
   __log_script_msg mysql "running backup of databases ${_databases[@]}\n"
 
+  ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
     local _to=${backup_dir}/${database}.sql.gz
 
@@ -64,8 +65,17 @@ run() {
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${_to}
 
+    [ $? -ne 0 ] && {
+      __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
+
+      ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      continue
+    }
+
     __log_script_msg mysql $(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)
   done
+
+  return ${ret}
 }
 
 
@@ -94,6 +104,12 @@ checking_vars() {
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
+  [ -z "${MYSQL_HOST}" ] && {
+    MYSQL_HOST=localhost
+
+    __log_script_msg mysql "${__WARN} MYSQL_HOST not defined, set default port ${MYSQL_HOST}\n"
+  }
+
   [ -z "${MYSQL_PORT}" ] && {
     MYSQL_PORT=3306
 
@@ -105,4 +121,6 @@ checking_vars() {
 
     __log_script_msg mysql "${__WARN} MYSQL_DATABASES_IGNORE not defined, ignore default database ${MYSQL_DATABASES_IGNORE[@]}\n"
   }
+
+  return ${__RETURNCODE_OK}
 }
