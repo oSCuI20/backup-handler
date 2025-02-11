@@ -32,7 +32,7 @@ __RETURNCODE_SCRIPT_CLEAN_OLD_BACKUPS=1252
 __RETURNCODE_SSH_FAILED=1251
 __RETURNCODE_SSH_FAILED_ARGUMENTS=1250
 
-_NOW_DATE=$(/bin/date +%Y%m%d)
+__NOW_DATE=$(/bin/date +%Y%m%d)
 
 _ROOT="$(/bin/dirname $(/bin/readlink -f $0))"
 

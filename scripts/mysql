@@ -72,7 +72,7 @@ run() {
       continue
     }
 
-    __log_script_msg mysql $(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)
+    __log_script_msg mysql "$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)\n"
   done
 
   return ${ret}
