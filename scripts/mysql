@@ -58,7 +58,7 @@ run() {
 
   ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
-    local _to=${backup_dir}/${database}.sql.gz
+    local _to=${backup_dir}
 
     /usr/bin/mysqldump ${_mysql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
