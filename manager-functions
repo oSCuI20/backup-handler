@@ -135,4 +135,43 @@ __ssh() {
 }
 
 
-clean_backups
+__BACKUP_MODE_INCREMENT=0
+__BACKUP_MODE_COMPLETE=1
+# $1 => mode (0|1)
+#      0 => increment
+#      1 => complete
+# $2 => directory
+# $3 => destination directory to save backups
+# __keep_last_backups() {
+
+# }
+
+
+
+#
+# function populates global vars
+# $1 script name
+checking_global_vars() {
+  local envname=${1^^}
+
+  [[ "${envname}" =~ ^[a-zA-Z_]*$ ]] || {
+    echo test ${envname}
+    return ${__RETURNCODE_CHECKING_GLOBAL_VARS}
+  }
+
+  local varnames=($(set | /bin/grep '^__DEFAULT'))
+
+  for varname in ${varnames[@]}; do
+    local vname=${envname}${varname/'__DEFAULT'/}
+    echo "set | /bin/grep ${vname%%=*}"
+
+    local _exists=$(set | /bin/grep "${vname%%=*}")
+    [ "${_exists}" == "" ] && {
+      echo "export ${vname}"
+      export ${vname}
+    }
+
+  done
+
+  return ${__RETURNCODE_OK}
+}

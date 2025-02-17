@@ -12,7 +12,7 @@ run() {
 
   __log_script_msg vbox "starting VirtualBox VM for ${HOSTNAME}\n"
 
-  ! ${_RUN_BACKUP_VBOX} && {
+  ! ${VBOX_BACKUP} && {
     __log_script_msg vbox "skipping VirtualBox VM for ${HOSTNAME}\n"
 
     return ${ret}

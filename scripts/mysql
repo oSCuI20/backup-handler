@@ -10,7 +10,7 @@ run() {
 
   __log_script_msg mysql "starting MySQL backups for ${HOSTNAME}\n"
 
-  ! ${_RUN_BACKUP_MYSQL} && {
+  ! ${MYSQL_RUN_BACKUP} && {
     __log_script_msg mysql "skipping MySQL backups for ${HOSTNAME}\n"
 
     return ${ret}
@@ -18,7 +18,7 @@ run() {
 
   checking_vars
 
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql/${__NOW_DATE}"
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql/complete"
 
   local _mysql_options=(
     -h ${MYSQL_HOST}
@@ -36,7 +36,7 @@ run() {
     --force
     --quiet
   )
-  local _tmpdir=${TEMPDIR:-/var/tmp}
+  local _tmpdir=${TEMPDIR:-/var/tmp/backups}
 
   local _databases=(${MYSQL_DATABASES[@]})
 
@@ -50,6 +50,8 @@ run() {
     }
   }
 
+  /bin/mkdir -p ${_tmpdir}
+
   for ignore in ${MYSQL_DATABASES_IGNORE[@]}; do
     local _databases=(${_databases[@]/${ignore}/})
   done
@@ -58,12 +60,10 @@ run() {
 
   ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
-    local _to=${backup_dir}
-
     /usr/bin/mysqldump ${_mysql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
 
-    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${_to}
+    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${backup_dir}
 
     [ $? -ne 0 ] && {
       __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
@@ -75,7 +75,26 @@ run() {
     __log_script_msg mysql "$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)\n"
   done
 
+  __log_script_msg mysql "finish backup of databases\n"
+
+  ${_MYSQL_KEEP_LAST_BACKUPS} && [ ${ret} -eq ${__RETURNCODE_OK} ] {
+    __keep_last_backups ${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql
+  }
+
   return ${ret}
+}
+
+
+# $1 => path to files
+__keep_last_backups() {
+  local __remote_dir=$1
+
+  __log_script_msg mysql "keep backups in ${__remote_dir} $\n"
+
+  local _files=$(/usr/bin/rclone --config ${_CONFIG_FILE} ls ${__remote_dir}/tmp | \
+                 /usr/bin/awk '{print $5}' | \
+                 /usr/bin/sort)
+
 }
 
 

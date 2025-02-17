@@ -1,14 +1,9 @@
-# General variables
-_QUIET=true
-_DEBUG=false
-_LOGGING=true
-
 # set to true for running script under ./scripts directory
-_RUN_BACKUP_SYNC=false
-_RUN_BACKUP_MYSQL=false
-_RUN_BACKUP_POSTGRESQL=false
-_RUN_BACKUP_VBOX=false
-_RUN_BACKUP_PSONO=false
+SYNC_RUN_BACKUP=false
+MYSQL_RUN_BACKUP=false
+POSTGRESQL_RUN_BACKUP=false
+VBOX_RUN_BACKUP=false
+PSONO_RUN_BACKUP=false
 
 ## backups files options
 #_CONFIG_RCLONE=

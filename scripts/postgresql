@@ -10,7 +10,7 @@ run() {
 
   __log_script_msg postgresql "starting backup files for ${HOSTNAME}\n"
 
-  ! ${_RUN_BACKUP_POSTGRESQL} && {
+  ! ${POSTGRESQL_RUN_BACKUP} && {
     __log_script_msg postgresql "skipping backup files for ${HOSTNAME}\n"
 
     return ${ret}

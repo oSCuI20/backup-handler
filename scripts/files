@@ -12,7 +12,7 @@ run() {
 
   __log_script_msg files "starting backup files for ${HOSTNAME}\n"
 
-  ! ${_RUN_BACKUP_FILES} && {
+  ! ${FILES_RUN_BACKUP} && {
     __log_script_msg files "skipping backup files for ${HOSTNAME}\n"
 
     return ${ret}

@@ -10,12 +10,13 @@ run() {
 
   __log_script_msg sync "starting synchronization for ${HOSTNAME}\n"
 
-  ! ${_RUN_BACKUP_SYNC} && {  # skip synchronization
+  ! ${SYNC_RUN_BACKUP} && {  # skip synchronization
     __log_script_msg sync "skipping synchronization for ${HOSTNAME}\n"
 
     return ${ret}
   }
 
+  checking_global_vars
   checking_vars
 
   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/sync"
@@ -45,7 +46,7 @@ run() {
 __keep_last_backups() {
   local __remote_dir=$1
 
-  __log_script_msg sync "increment directory ${__remote_dir}\n"
+  __log_script_msg sync "keep backups in ${__remote_dir}\n"
 
   local _retention_dates=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${__remote_dir} | \
                             /usr/bin/awk '{print $5}' | \
@@ -71,6 +72,8 @@ checking_vars() {
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
+
+  local _envs=(/bin/env)
 
   return ${__RETURNCODE_OK}
 }
