@@ -161,13 +161,10 @@ checking_global_vars() {
   local varnames=($(set | /bin/grep '^__DEFAULT'))
 
   for varname in ${varnames[@]}; do
-    local vname=${envname}${varname/'__DEFAULT'/}
-    echo "set | /bin/grep ${vname%%=*}"
-
-    local _exists=$(set | /bin/grep "${vname%%=*}")
+    local _vname=${envname}${varname/'__DEFAULT'/}
+    local _exists=$(set | /bin/grep "^${_vname%%=*}")
     [ "${_exists}" == "" ] && {
-      echo "export ${vname}"
-      eval "${vname}"
+      eval "${_vname}"
     }
 
   done
