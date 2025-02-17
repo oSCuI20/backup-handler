@@ -155,7 +155,6 @@ checking_global_vars() {
   local envname=${1^^}
 
   [[ "${envname}" =~ ^[a-zA-Z_]*$ ]] || {
-    echo test ${envname}
     return ${__RETURNCODE_CHECKING_GLOBAL_VARS}
   }
 
@@ -168,7 +167,7 @@ checking_global_vars() {
     local _exists=$(set | /bin/grep "${vname%%=*}")
     [ "${_exists}" == "" ] && {
       echo "export ${vname}"
-      export ${vname}
+      eval "${vname}"
     }
 
   done

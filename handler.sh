@@ -52,7 +52,7 @@ main() {
 
     checking_global_vars ${script}
 
-    run
+    # run
   done
 
 }
