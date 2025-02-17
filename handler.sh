@@ -18,7 +18,7 @@ _FILES_KEEP_LAST_BACKUPS_WEEKLY=${_DEFAULT_KEEP_LAST_BACKUPS_WEEKLY}       # kee
 _FILES_KEEP_LAST_BACKUPS_MONTHLY=${_DEFAULT_KEEP_LAST_BACKUPS_MONTHLY}     # keep last day of the month
 _FILES_KEEP_LAST_BACKUPS_ANNUALLY=${_DEFAULT_KEEP_LAST_BACKUPS_ANNUALLY}   # keep last day of the year
 
-_SYNC_KEEP_LAST_BACKUPS=0   # 0 or undefined unlimit. keep last n increment backups
+#_SYNC_KEEP_LAST_BACKUPS=0   # 0 or undefined unlimit. keep last n increment backups
 
 _POSTGRESQL_KEEP_LAST_BACKUPS_DAILY=${_DEFAULT_KEEP_LAST_BACKUPS_DAILY}
 _POSTGRESQL_KEEP_LAST_BACKUPS_WEEKLY=${_DEFAULT_KEEP_LAST_BACKUPS_WEEKLY}       # keep last day of the week

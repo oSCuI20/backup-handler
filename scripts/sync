@@ -31,7 +31,7 @@ run() {
   done
 
   __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
-  __log_script_msg sync "retentions ${#_retention_dates[@]} of ${_SYNC_KEEP_LAST_BACKUPS:-0}\n"
+  __log_script_msg sync "retentions ${#_retention_dates[@]} of ${ :-unlimit}\n"
 
   [ ${_SYNC_KEEP_LAST_BACKUPS:-0} -ne 0 ] && {
     __keep_last_backups ${backup_dir}/increment
@@ -55,17 +55,12 @@ __keep_last_backups() {
     local __remove_filename=${__remote_dir}/${_retention_dates[0]}
 
     __log_script_msg sync "trying remove directory ${__remove_filename}\n"
-    echo "/usr/bin/rclone --config=${_CONFIG_RCLONE} delete ${__remote_filename}"
+    /usr/bin/rclone --config=${_CONFIG_RCLONE} delete ${__remove_filename}
     [ $? -ne 0 ] && {
-      __log_script_msg sync "${__FAIL} can not remove ${__remote_filename}\n"
+      __log_script_msg sync "${__FAIL} can not remove ${__remove_filename}\n"
     }
 
-    local _retention_dates=(${_retention_dates[@]:1${#_retention_dates[@]}})  # remove first element
-
-    # local _retention_dates=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${backup_dir}/increment | \
-    #                           /usr/bin/awk '{print $5}' | \
-    #                           /usr/bin/sort))
-
+    local _retention_dates=(${_retention_dates[@]:1:${#_retention_dates[@]}})  # remove first element
   done
 }
 
