@@ -134,8 +134,5 @@ __ssh() {
   return ${retval}
 }
 
-__RUNNING=(DAILY WEEKLY MONTHLY QUARTERLY)
-# $1 -> when running
-script_must_running() {
-  return
-}
+
+clean_backups
