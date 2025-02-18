@@ -18,7 +18,7 @@ run() {
 
   checking_vars
 
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql/complete"
+  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql"
 
   local _mysql_options=(
     -h ${MYSQL_HOST}
@@ -36,7 +36,7 @@ run() {
     --force
     --quiet
   )
-  local _tmpdir=${TEMPDIR:-/var/tmp/backups}
+  local _tmpdir=${MYSQK_TMPDIR:-/var/tmp/backups}
 
   local _databases=(${MYSQL_DATABASES[@]})
 
@@ -63,7 +63,13 @@ run() {
     /usr/bin/mysqldump ${_mysql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
 
-    /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${backup_dir}
+    __rclone_copy_complete \
+      --s3-path=${backup_dir} \
+      --file=${_tmpdir}/${database}.sql.gz \
+      --keep-daily=${MYSQL_KEEP_LAST_DAILY} \
+      --keep-weekly=${MYSQL_KEEP_LAST_WEEKLY} \
+      --keep-monthly=${MYSQL_KEEP_LAST_MONTHLY} \
+      --keep-annually=${MYSQL_KEEP_LAST_ANNUALLY}
 
     [ $? -ne 0 ] && {
       __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
@@ -77,24 +83,18 @@ run() {
 
   __log_script_msg mysql "finish backup of databases\n"
 
-  ${_MYSQL_KEEP_LAST_BACKUPS} && [ ${ret} -eq ${__RETURNCODE_OK} ] {
-    __keep_last_backups ${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql
+  [ ${ret} -eq ${__RETURNCODE_OK} ] && {
+    [ "${MYSQL_BACKUP_MODE}" == "${__BACKUP_MODE_COMPLETE}" ] && {
+      __keep_last_backups --mode=${MYSQL_BACKUP_MODE} \
+                          --s3-path=${backup_dir} \
+                          --complete-keep-daily=${MYSQL_KEEP_LAST_DAILY} \
+                          --complete-keep-weekly=${MYSQL_KEEP_LAST_WEEKLY} \
+                          --complete-keep-monthly=${MYSQL_KEEP_LAST_MONTHLY} \
+                          --complete-keep-annually=${MYSQL_KEEP_LAST_ANNUALLY}
+    }
   }
 
   return ${ret}
-}
-
-
-# $1 => path to files
-__keep_last_backups() {
-  local __remote_dir=$1
-
-  __log_script_msg mysql "keep backups in ${__remote_dir} $\n"
-
-  local _files=$(/usr/bin/rclone --config ${_CONFIG_FILE} ls ${__remote_dir}/tmp | \
-                 /usr/bin/awk '{print $5}' | \
-                 /usr/bin/sort)
-
 }
 
 
@@ -103,6 +103,14 @@ checking_vars() {
     __log_script_msg mysql "${__FAIL} /usr/bin/mysql command not found\n"
 
     return ${__RETURNCODE_SCRIPT_ERROR_ANY}
+  }
+
+  [ -n "${MYSQL_BACKUP_MODE}" ] && {
+    [ "${MYSQL_BACKUP_MODE}" != "${__BACKUP_MODE_COMPLETE}" ] && {
+      __log_script_msg mysql "${__FAIL} backup mode not support, support MYSQL_BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
+
+      return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
+    }
   }
 
   [ ! -f /usr/bin/mysqldump ]  && {

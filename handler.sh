@@ -4,6 +4,7 @@
 #
 
 _ROOT="$(/bin/dirname $(/bin/readlink -f $0))"
+_CURRENT_DATE=$(/bin/date +%Y%m%d)
 
 # default arguments
 _CONFIG_FILE="${_ROOT}/config/backup.conf"
@@ -18,11 +19,13 @@ _PIDFILE=/var/run/hanled-backup.locked
 __DEFAULT_DEBUG=false
 __DEFAULT_QUIET=true
 __DEFAULT_LOGGING=true
+__DEFAULT_TMPDIR=/var/tmp/backup
 
 __DEFAULT_RUN_BACKUP=false
 
-__DEFAULT_KEEP_LAST_MODE=${__BACKUP_MODE_COMPLETE:-0}
+__DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
+#__DEFAULT_KEEP_LAST_INCREMENT=
 __DEFAULT_KEEP_LAST_DAILY=7
 __DEFAULT_KEEP_LAST_WEEKLY=4     # keep last day of the week
 __DEFAULT_KEEP_LAST_MONTHLY=6    # keep last day of the month
@@ -38,8 +41,8 @@ __RETURNCODE_SCRIPT_CLEAN_OLD_BACKUPS=1252
 __RETURNCODE_SSH_FAILED=1251
 __RETURNCODE_SSH_FAILED_ARGUMENTS=1250
 __RETURNCODE_CHECKING_GLOBAL_VARS=1249
-
-__NOW_DATE=$(/bin/date +%Y%m%d)
+__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT=1248
+__RETURNCODE_SCRIPT_RCLONE_LOCALFILE_NOTFOUND=1247
 
 
 main() {
@@ -48,11 +51,11 @@ main() {
   load_fileconf ${_CONFIG_FILE}
 
   for script in $(ls ${_SCRIPTS_DIR}); do
-    . ${_SCRIPTS_DIR}/${script}
-
     checking_global_vars ${script}
 
-    # run
+    . ${_SCRIPTS_DIR}/${script}
+
+    run
   done
 
 }

@@ -16,11 +16,10 @@ run() {
     return ${ret}
   }
 
-  checking_global_vars
   checking_vars
 
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/sync"
-  increment="${backup_dir}/increment/${__NOW_DATE}"
+  backup_dir=${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/sync
+  increment=${backup_dir}${__s3_increment}/${_CURRENT_DATE}
 
   for dir in ${BACKUP_DIR[@]}; do
     main="${backup_dir}/main${dir}"
@@ -32,37 +31,15 @@ run() {
   done
 
   __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
-  __log_script_msg sync "retentions ${#_retention_dates[@]} of ${ :-unlimit}\n"
+  __log_script_msg sync "retentions ${#_retention_dates[@]} of ${SYNC_KEEP_LAST_INCREMENT:-unlimit}\n"
 
-  [ ${_SYNC_KEEP_LAST_BACKUPS:-0} -ne 0 ] && {
-    __keep_last_backups ${backup_dir}/increment
+  [ ${SYNC_KEEP_LAST_INCREMENT:-0} -ne 0 ] && {
+    __keep_last_backups --mode=${SYNC_BACKUP_MODE} \
+                        --s3-path=${backup_dir} \
+                        --increment-keep=${SYNC_KEEP_LAST_INCREMENT}
   }
 
   return ${ret}
-}
-
-
-# $1 => path to increment directories
-__keep_last_backups() {
-  local __remote_dir=$1
-
-  __log_script_msg sync "keep backups in ${__remote_dir}\n"
-
-  local _retention_dates=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${__remote_dir} | \
-                            /usr/bin/awk '{print $5}' | \
-                            /usr/bin/sort))
-
-  while [ ${#_retention_dates[@]} -gt ${_SYNC_KEEP_LAST_BACKUPS} ]; do
-    local __remove_filename=${__remote_dir}/${_retention_dates[0]}
-
-    __log_script_msg sync "trying remove directory ${__remove_filename}\n"
-    /usr/bin/rclone --config=${_CONFIG_RCLONE} delete ${__remove_filename}
-    [ $? -ne 0 ] && {
-      __log_script_msg sync "${__FAIL} can not remove ${__remove_filename}\n"
-    }
-
-    local _retention_dates=(${_retention_dates[@]:1:${#_retention_dates[@]}})  # remove first element
-  done
 }
 
 
@@ -73,7 +50,11 @@ checking_vars() {
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
-  local _envs=(/bin/env)
+  [ "${SYNC_BACKUP_MODE}" != "${__BACKUP_MODE_INCREMENT}" ] && {
+    __log_script_msg sync "${__FAIL} backup mode not support, support SYNC_BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
+
+    return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
+  }
 
   return ${__RETURNCODE_OK}
 }
