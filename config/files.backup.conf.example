@@ -1,0 +1,20 @@
+### run backups using ./scripts/files
+# _DEBUG=false
+# _QUIET=true
+# _LOGGING=true
+# _TMPDIR=/var/tmp/backup
+
+# _RCLONE_REMOTE_BACKUP=
+# _RCLONE_EXTRA_OPTIONS=
+
+# _RUN_BACKUP=false
+
+# _BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
+
+#_KEEP_LAST_INCREMENT=
+# _KEEP_LAST_DAILY=0      # keep last daily
+# _KEEP_LAST_WEEKLY=0     # keep last day of the week
+# _KEEP_LAST_MONTHLY=0    # keep last day of the month
+# _KEEP_LAST_ANNUALLY=0   # keep last day of the year
+
+# _BACKUP_DIR=

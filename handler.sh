@@ -2,12 +2,12 @@
 #
 # Event handler to execute backups for the server
 #
-
 _ROOT="$(/bin/dirname $(/bin/readlink -f $0))"
 _CURRENT_DATE=$(/bin/date +%Y%m%d)
 
 # default arguments
-_CONFIG_FILE="${_ROOT}/config/backup.conf"
+_CONFIG_DIR="${_ROOT}/config"
+_CONFIG_FILE="${_CONFIG_DIR}/backup.conf"
 _CONFIG_RCLONE="${_ROOT}/config/rclone.conf"
 _SCRIPTS_DIR="${_ROOT}/scripts"
 _LOGDIR="${_ROOT}/logs"
@@ -21,15 +21,21 @@ __DEFAULT_QUIET=true
 __DEFAULT_LOGGING=true
 __DEFAULT_TMPDIR=/var/tmp/backup
 
+# default rclone backups options
+__DEFAULT_RCLONE_REMOTE_BACKUP=
+__DEFAULT_RCLONE_EXTRA_OPTIONS=
+
 __DEFAULT_RUN_BACKUP=false
 
 __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 #__DEFAULT_KEEP_LAST_INCREMENT=
-__DEFAULT_KEEP_LAST_DAILY=7
-__DEFAULT_KEEP_LAST_WEEKLY=4     # keep last day of the week
-__DEFAULT_KEEP_LAST_MONTHLY=6    # keep last day of the month
-__DEFAULT_KEEP_LAST_ANNUALLY=1   # keep last day of the year
+__DEFAULT_KEEP_LAST_DAILY=0      # keep last daily
+__DEFAULT_KEEP_LAST_WEEKLY=0     # keep last day of the week
+__DEFAULT_KEEP_LAST_MONTHLY=0    # keep last day of the month
+__DEFAULT_KEEP_LAST_ANNUALLY=0   # keep last day of the year
+
+__DEFAULT_BACKUP_DIR=
 
 # return code for functions
 __RETURNCODE_OK=0
@@ -43,7 +49,7 @@ __RETURNCODE_SSH_FAILED_ARGUMENTS=1250
 __RETURNCODE_CHECKING_GLOBAL_VARS=1249
 __RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT=1248
 __RETURNCODE_SCRIPT_RCLONE_LOCALFILE_NOTFOUND=1247
-
+__RETURNCODE_SCRIPT_RCLONE_LOCALDIRECTORY_NOTFOUND=1246
 
 main() {
   parse_arguments "$@"  #parse arguments and load configs
@@ -51,13 +57,19 @@ main() {
   load_fileconf ${_CONFIG_FILE}
 
   for script in $(ls ${_SCRIPTS_DIR}); do
-    checking_global_vars ${script}
+    [ ! -f "${_CONFIG_DIR}/${script}.backup.conf" ] && {
+      continue
+    }
 
-    . ${_SCRIPTS_DIR}/${script}
+    . ${_SCRIPTS_DIR}/${script}  # load script functions, `checking_vars` and `run`
 
-    run
+    set_script_vars
+
+    checking_vars || continue
+    #run
+
+    unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
   done
-
 }
 
 
@@ -68,8 +80,8 @@ load_fileconf() {
 
   . $1
 
-  [ -z "${RCLONE_BACKUP_REMOTE}" ] && {
-    __logger ${__ERROR} "RCLONE_BACKUP_REMOTE not define\n"
+  [ -z "${__DEFAULT_RCLONE_REMOTE_BACKUP}" ] && {
+    __logger ${__ERROR} "__DEFAULT_RCLONE_REMOTE_BACKUP not define\n"
   }
 }  #load_fileconf
 

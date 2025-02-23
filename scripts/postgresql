@@ -16,9 +16,7 @@ run() {
     return ${ret}
   }
 
-  checking_vars
-
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/postgresql/${__NOW_DATE}"
+  backup_dir="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/postgresql/${__NOW_DATE}"
 
   local _psql_options=(
     -h ${POSTGRESQL_HOST}

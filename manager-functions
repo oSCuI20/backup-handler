@@ -144,6 +144,57 @@ __s3_complete_weekly=/${__BACKUP_MODE_COMPLETE}/weekly
 __s3_complete_daily=/${__BACKUP_MODE_COMPLETE}/daily
 
 
+__rclone_run() {
+  while [ $# -ge 1 ]; do
+    local key=$1
+    case ${key} in
+      --command=*)
+        local _command="${key#*=}"
+        ;;
+      --extra=*)
+        local _extra="${key#*=}"
+        ;;
+      --args=*)
+        local _args="${key#*=}"
+        ;;
+    esac
+    shift
+  done
+
+  /usr/bin/rclone ${_RCLONE_EXTRA_OPTIONS[@]} \
+    --config=${_CONFIG_RCLONE} \
+    ${_command} ${_extra} ${_args}
+
+  return $?
+}
+
+__rclone_sync_run() {
+  while [ $# -ge 1 ]; do
+    local key=$1
+    case ${key} in
+      --s3-path=*)
+        local _s3path="${key#*=}"
+        ;;
+      --directory=*)
+        local _localdir="${key#*=}"
+        ;;
+      --keep-increment=*)
+        local _keep_last_increment="${key#*=}"
+        ;;
+    esac
+    shift
+  done
+
+  local _rclone_options=
+  [ ${_keep_last_increment} -gt 0 ] && {
+    local _rclone_options=("--backup-dir=${_s3path}/${__s3_increment}/${_CURRENT_DATE}")
+  }
+
+  __rclone_run --command=sync \
+               --extra="${_rclone_options[@]}" \
+               --args="${_localfile} ${_s3path}"
+}
+
 __rclone_copy_run() {
   while [ $# -ge 1 ]; do
     local key=$1
@@ -166,8 +217,7 @@ __rclone_copy_run() {
 
   __logger ${__INFO} file ${_localfile} to ${_s3path}\n
 
-  /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} \
-                  copy ${_localfile} ${_s3path}
+  __rclone_run --command=copy --args="${_localfile} ${_s3path}"
 
   local retval=$?
   [ ${retval} -ne 0 ] && {
@@ -318,6 +368,34 @@ __keep() {
     }
 
     local _retention=(${_retention[@]:1:${#_retention[@]}})  # remove first element
+  done
+}
+
+
+# populates default vars
+#
+set_script_vars() {
+  local varnames=($(set | /bin/grep '^__DEFAULT'))
+
+  for varname in ${varnames[@]}; do
+    local _vname=${varname/'__DEFAULT'/}
+    local _exists=$(set | /bin/grep "^${_vname%%=*}")
+
+    [ "${_exists}" == "" ] && {
+      __logger ${__WARN} default value to var ${_vname}\n
+
+      eval "${_vname}"
+    }
+  done
+}
+
+
+unset_script_vars() {
+  local fileconf=$1
+
+  IFS=$'\n'
+  for varname in $(/bin/cat ${fileconf} | /bin/sed -e '/^#/d' -e '/^$/d'); do
+    unset ${varname%%=*}
   done
 }
 

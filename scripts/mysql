@@ -16,9 +16,7 @@ run() {
     return ${ret}
   }
 
-  checking_vars
-
-  backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/mysql"
+  backup_dir="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/mysql"
 
   local _mysql_options=(
     -h ${MYSQL_HOST}
@@ -36,7 +34,7 @@ run() {
     --force
     --quiet
   )
-  local _tmpdir=${MYSQK_TMPDIR:-/var/tmp/backups}
+  local _tmpdir=${MYSQL_TMPDIR}
 
   local _databases=(${MYSQL_DATABASES[@]})
 

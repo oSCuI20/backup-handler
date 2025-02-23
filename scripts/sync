@@ -16,13 +16,11 @@ run() {
     return ${ret}
   }
 
-  checking_vars
+  sync_directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
+  increment=${sync_directory}${__s3_increment}/${_CURRENT_DATE}
 
-  backup_dir=${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/sync
-  increment=${backup_dir}${__s3_increment}/${_CURRENT_DATE}
-
-  for dir in ${BACKUP_DIR[@]}; do
-    main="${backup_dir}/main${dir}"
+  for dir in ${_BACKUP_DIR[@]}; do
+    main="${sync_directory}/main${dir}"
     rclone_options=("--backup-dir=${increment}")
 
     /usr/bin/rclone --config=${_CONFIG_RCLONE} "${RCLONE_EXTRA_OPTIONS[@]}" sync ${rclone_options[@]} ${dir} ${main}
@@ -31,12 +29,12 @@ run() {
   done
 
   __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
-  __log_script_msg sync "retentions ${#_retention_dates[@]} of ${SYNC_KEEP_LAST_INCREMENT:-unlimit}\n"
+  __log_script_msg sync "retentions ${#_retention_dates[@]} of ${_KEEP_LAST_INCREMENT:-unlimit}\n"
 
-  [ ${SYNC_KEEP_LAST_INCREMENT:-0} -ne 0 ] && {
-    __keep_last_backups --mode=${SYNC_BACKUP_MODE} \
-                        --s3-path=${backup_dir} \
-                        --increment-keep=${SYNC_KEEP_LAST_INCREMENT}
+  [ ${_KEEP_LAST_INCREMENT:-0} -ne 0 ] && {
+    __keep_last_backups --mode=${_BACKUP_MODE} \
+                        --s3-path=${sync_directory} \
+                        --increment-keep=${_KEEP_LAST_INCREMENT}
   }
 
   return ${ret}
@@ -44,14 +42,14 @@ run() {
 
 
 checking_vars() {
-  [ -z "${BACKUP_DIR}" ] && {
-    __log_script_msg sync "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
+  [ -z "${_BACKUP_DIR}" ] && {
+    __log_script_msg sync "${__FAIL} _BACKUP_DIR not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
-  [ "${SYNC_BACKUP_MODE}" != "${__BACKUP_MODE_INCREMENT}" ] && {
-    __log_script_msg sync "${__FAIL} backup mode not support, support SYNC_BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
+  [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_INCREMENT}" ] && {
+    __log_script_msg sync "${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
 
     return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
   }

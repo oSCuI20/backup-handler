@@ -18,8 +18,6 @@ run() {
     return ${ret}
   }
 
-#   checking_vars
-
 #   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
 
 #   for dir in ${BACKUP_DIR[@]}; do
@@ -40,7 +38,7 @@ run() {
 
 checking_vars() {
   [ -z "${BACKUP_DIR}" ] && {
-    __log_script_msg rclone "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
+    __log_script_msg files "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }

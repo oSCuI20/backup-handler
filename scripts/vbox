@@ -62,4 +62,6 @@ checking_vars() {
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
+
+  return ${__RETURNCODE_OK}
 }
