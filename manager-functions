@@ -382,7 +382,7 @@ set_script_vars() {
     local _exists=$(set | /bin/grep "^${_vname%%=*}")
 
     [ "${_exists}" == "" ] && {
-      __logger ${__WARN} default value to var ${_vname}\n
+      __logger ${__WARN} "default value to var ${_vname}\n"
 
       eval "${_vname}"
     }
