@@ -61,7 +61,8 @@ main() {
       continue
     }
 
-    . ${_SCRIPTS_DIR}/${script}  # load script functions, `checking_vars` and `run`
+    . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
+    . ${_SCRIPTS_DIR}/${script}              # load script functions, `checking_vars` and `run`
 
     set_script_vars
 
