@@ -16,7 +16,7 @@ run() {
     return ${ret}
   }
 
-  backup_dir="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/mysql"
+  mysql_directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/mysql"
 
   local _mysql_options=(
     -h ${MYSQL_HOST}
@@ -62,7 +62,7 @@ run() {
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
 
     __rclone_copy_complete \
-      --s3-path=${backup_dir} \
+      --s3-path=${mysql_directory} \
       --file=${_tmpdir}/${database}.sql.gz \
       --keep-daily=${MYSQL_KEEP_LAST_DAILY} \
       --keep-weekly=${MYSQL_KEEP_LAST_WEEKLY} \
@@ -84,7 +84,7 @@ run() {
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     [ "${MYSQL_BACKUP_MODE}" == "${__BACKUP_MODE_COMPLETE}" ] && {
       __keep_last_backups --mode=${MYSQL_BACKUP_MODE} \
-                          --s3-path=${backup_dir} \
+                          --s3-path=${mysql_directory} \
                           --complete-keep-daily=${MYSQL_KEEP_LAST_DAILY} \
                           --complete-keep-weekly=${MYSQL_KEEP_LAST_WEEKLY} \
                           --complete-keep-monthly=${MYSQL_KEEP_LAST_MONTHLY} \

@@ -185,6 +185,12 @@ __rclone_sync_run() {
     shift
   done
 
+  [ ! -d "${_localdir}" ] && {
+    __logger ${__FAIL} "directory not found ${_localdir}\n"
+
+    return ${__RETURNCODE_SCRIPT_RCLONE_LOCALDIRECTORY_NOTFOUND}
+  }
+
   local _rclone_options=
   [ ${_keep_last_increment} -gt 0 ] && {
     local _rclone_options=("--backup-dir=${_s3path}/${__s3_increment}/${_CURRENT_DATE}")
@@ -192,7 +198,9 @@ __rclone_sync_run() {
 
   __rclone_run --command=sync \
                --extra="${_rclone_options[@]}" \
-               --args="${_localfile} ${_s3path}"
+               --args="${_localdir} ${_s3path}/main/${_localdir}"
+
+  return $?
 }
 
 __rclone_copy_run() {
@@ -259,22 +267,23 @@ __rclone_copy_complete() {
   local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
   local _run_daily=${_keep_last_daily:-0}
 
-  [ ${_keep_last_annually} -gt 0 ] && {
-    [ "${_run_annually}" == "001" ] && \
-      __rclone_copy_run  --file=${_localfile} --s3-path=${_s3path}${__s3_complete_annually}/${_CURRENT_DATE}
+  local s3path=("${_s3path}${__s3_complete_daily}/${_CURRENT_DATE}")
+
+  [ ${_keep_last_annually} -gt 0 ] && [ "${_run_annually}" == "001" ] && {
+    local s3path=(${s3path[@]} "${_s3path}${__s3_complete_annually}/${_CURRENT_DATE}")
   }
 
-  [ ${_keep_last_monthly} -gt 0 ] && {
-    [ "${_run_monthly}" == "01" ] && \
-      __rclone_copy_run  --file=${_localfile} --s3-path=${_s3path}${__s3_complete_monthly}/${_CURRENT_DATE}
+  [ ${_keep_last_monthly} -gt 0 ] && [ "${_run_monthly}" == "01" ] && {
+    local s3path=(${s3path[@]} "${_s3path}${__s3_complete_monthly}/${_CURRENT_DATE}")
   }
 
-  [ ${_keep_last_weekly} -gt 0 ] && {
-    [ "${_run_weekly}" == "1" ] && \
-      __rclone_copy_run  --file=${_localfile} --s3-path=${_s3path}${__s3_complete_weekly}/${_CURRENT_DATE}
+  [ ${_keep_last_weekly} -gt 0 ] && [ "${_run_weekly}" == "1" ] && {
+    local s3path=(${s3path[@]} "${_s3path}${__s3_complete_weekly}/${_CURRENT_DATE}")
   }
 
-  __rclone_copy_run  --file=${_localfile} --s3-path=${_s3path}${__s3_complete_daily}/${_CURRENT_DATE}
+  for s3 in ${s3path[@]}; do
+    __rclone_copy_run --file=${_localfile} --s3-path=${s3}
+  done
 }
 
 # $1 => mode (0|1)
@@ -382,7 +391,7 @@ set_script_vars() {
     local _exists=$(set | /bin/grep "^${_vname%%=*}")
 
     [ "${_exists}" == "" ] && {
-      __logger ${__WARN} "default value to var ${_vname}\n"
+      __logger ${__INFO} "default value to var ${_vname}\n"
 
       eval "${_vname}"
     }

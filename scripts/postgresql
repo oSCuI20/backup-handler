@@ -10,13 +10,13 @@ run() {
 
   __log_script_msg postgresql "starting backup files for ${HOSTNAME}\n"
 
-  ! ${POSTGRESQL_RUN_BACKUP} && {
+  ! ${_RUN_BACKUP} && {
     __log_script_msg postgresql "skipping backup files for ${HOSTNAME}\n"
 
     return ${ret}
   }
 
-  backup_dir="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/postgresql/${__NOW_DATE}"
+  postgresql_directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/postgresql/${__NOW_DATE}"
 
   local _psql_options=(
     -h ${POSTGRESQL_HOST}
@@ -53,7 +53,7 @@ run() {
 
   ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
-    local _to=${backup_dir}/${database}.sql.gz
+    local _to=${postgresql_directory}/${database}.sql.gz
 
     /usr/bin/pg_dump ${_psql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
