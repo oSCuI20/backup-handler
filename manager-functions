@@ -161,7 +161,7 @@ __rclone_run() {
     shift
   done
 
-  /usr/bin/rclone --config=${_CONFIG_RCLONE} \
+  eval /usr/bin/rclone --config=${_CONFIG_RCLONE} \
     ${_RCLONE_EXTRA_OPTIONS[@]} \
     ${_command} ${_extra} ${_args}
 
