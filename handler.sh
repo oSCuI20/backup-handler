@@ -67,7 +67,7 @@ main() {
     set_script_vars
 
     checking_vars || continue
-    #run
+    run
 
     unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
   done
