@@ -161,8 +161,8 @@ __rclone_run() {
     shift
   done
 
-  /usr/bin/rclone ${_RCLONE_EXTRA_OPTIONS[@]} \
-    --config=${_CONFIG_RCLONE} \
+  /usr/bin/rclone --config=${_CONFIG_RCLONE} \
+    ${_RCLONE_EXTRA_OPTIONS[@]} \
     ${_command} ${_extra} ${_args}
 
   return $?
@@ -193,12 +193,12 @@ __rclone_sync_run() {
 
   local _rclone_options=
   [ ${_keep_last_increment} -gt 0 ] && {
-    local _rclone_options=("--backup-dir=${_s3path}/${__s3_increment}/${_CURRENT_DATE}")
+    local _rclone_options=("--backup-dir=${_s3path}${__s3_increment}/${_CURRENT_DATE}")
   }
 
   __rclone_run --command=sync \
                --extra="${_rclone_options[@]}" \
-               --args="${_localdir} ${_s3path}/main/${_localdir}"
+               --args="${_localdir} ${_s3path}/main${_localdir}"
 
   return $?
 }
