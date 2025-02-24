@@ -384,9 +384,10 @@ __keep() {
 # populates default vars
 #
 set_script_vars() {
+  IFS=$'\n'
+
   local varnames=($(set | /bin/grep '^__DEFAULT'))
 
-  IFS=$'\n'
   for varname in ${varnames[@]}; do
     local _vname=${varname/'__DEFAULT'/}
     local _exists=$(set | /bin/grep "^${_vname%%=*}")
@@ -397,6 +398,8 @@ set_script_vars() {
       eval "${_vname}"
     }
   done
+
+  IFS=${__RESTORE_IFS}
 }
 
 
