@@ -386,6 +386,7 @@ __keep() {
 set_script_vars() {
   local varnames=($(set | /bin/grep '^__DEFAULT'))
 
+  IFS=$'\n'
   for varname in ${varnames[@]}; do
     local _vname=${varname/'__DEFAULT'/}
     local _exists=$(set | /bin/grep "^${_vname%%=*}")
