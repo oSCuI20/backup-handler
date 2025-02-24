@@ -23,7 +23,7 @@ run() {
     __rclone_sync_run \
       --s3-path=${sync_directory} \
       --directory=${directory} \
-      --keep-increment=${_KEEP_LAST_INCREMENT}
+      --keep-increment=${_KEEP_LAST_INCREMENT} > ${_LOGDIR}/sync-${_CURRENT_DATE}.log
 
     [ $? -ne 0 ] && {
       __log_script_msg sync "${__FAIL} synchronization ${directory} failure\n"
