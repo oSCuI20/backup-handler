@@ -10,18 +10,17 @@ run() {
 
   __log_script_msg sync "starting synchronization for ${HOSTNAME}\n"
 
-  ! ${SYNC_RUN_BACKUP} && {  # skip synchronization
+  ! ${_RUN_BACKUP} && {  # skip synchronization
     __log_script_msg sync "skipping synchronization for ${HOSTNAME}\n"
 
     return ${ret}
   }
 
-  sync_directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
-  increment=${sync_directory}${__s3_increment}/${_CURRENT_DATE}
+  local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
 
   for directory in ${_BACKUP_DIR[@]}; do
     __rclone_sync_run \
-      --s3-path=${sync_directory} \
+      --s3-path=${__directory} \
       --directory=${directory} \
       --keep-increment=${_KEEP_LAST_INCREMENT} &> ${_LOGDIR}/sync.log-${_CURRENT_DATE}
 
@@ -39,7 +38,7 @@ run() {
 
   [ ${_KEEP_LAST_INCREMENT:-0} -ne 0 ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
-                        --s3-path=${sync_directory} \
+                        --s3-path=${__directory} \
                         --increment-keep=${_KEEP_LAST_INCREMENT}
   }
 

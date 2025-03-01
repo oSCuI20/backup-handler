@@ -16,7 +16,7 @@ run() {
     return ${ret}
   }
 
-  postgresql_directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/postgresql/${__NOW_DATE}"
+  local __directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/postgresql/${__NOW_DATE}"
 
   local _psql_options=(
     -h ${POSTGRESQL_HOST}
@@ -53,10 +53,16 @@ run() {
 
   ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
-    local _to=${postgresql_directory}/${database}.sql.gz
-
     /usr/bin/pg_dump ${_psql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
+
+    __rclone_copy_complete \
+      --s3-path=${__directory} \
+      --file=${_tmpdir}/${database}.sql.gz \
+      --keep-daily=${_KEEP_LAST_DAILY} \
+      --keep-weekly=${_KEEP_LAST_WEEKLY} \
+      --keep-monthly=${_KEEP_LAST_MONTHLY} \
+      --keep-annually=${_KEEP_LAST_ANNUALLY} &> ${_LOGDIR}/postgresql.log-${_CURRENT_DATE}
 
     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} copy ${_tmpdir}/${database}.sql.gz ${_to}
 

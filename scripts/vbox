@@ -5,18 +5,18 @@
 
 
 run() {
-  ret=256
-
   ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg vbox "starting VirtualBox VM for ${HOSTNAME}\n"
+  __log_script_msg vbox "starting synchronization for ${HOSTNAME}\n"
 
-  ! ${VBOX_BACKUP} && {
-    __log_script_msg vbox "skipping VirtualBox VM for ${HOSTNAME}\n"
+  ! ${_RUN_BACKUP} && {  # skip synchronization
+    __log_script_msg vbox "skipping synchronization for ${HOSTNAME}\n"
 
     return ${ret}
   }
+
+  local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
 
   # ${_RUN_BACKUP_VBOX} && {
   #   /bin/echo ""

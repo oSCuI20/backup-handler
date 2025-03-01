@@ -11,7 +11,7 @@
 
 # _BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
-#_KEEP_LAST_INCREMENT=
+# _KEEP_LAST_INCREMENT=
 # _KEEP_LAST_DAILY=0      # keep last daily
 # _KEEP_LAST_WEEKLY=0     # keep last day of the week
 # _KEEP_LAST_MONTHLY=0    # keep last day of the month

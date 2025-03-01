@@ -12,7 +12,7 @@ run() {
 
   __log_script_msg files "starting backup files for ${HOSTNAME}\n"
 
-  ! ${FILES_RUN_BACKUP} && {
+  ! ${_RUN_BACKUP} && {
     __log_script_msg files "skipping backup files for ${HOSTNAME}\n"
 
     return ${ret}
@@ -37,8 +37,8 @@ run() {
 
 
 checking_vars() {
-  [ -z "${BACKUP_DIR}" ] && {
-    __log_script_msg files "${__FAIL} BACKUP_DIR not defined, cannot run the script\n"
+  [ -z "${_BACKUP_DIR}" ] && {
+    __log_script_msg files "${__FAIL} _BACKUP_DIR not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }

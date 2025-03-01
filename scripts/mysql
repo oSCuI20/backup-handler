@@ -10,13 +10,13 @@ run() {
 
   __log_script_msg mysql "starting MySQL backups for ${HOSTNAME}\n"
 
-  ! ${MYSQL_RUN_BACKUP} && {
+  ! ${_RUN_BACKUP} && {
     __log_script_msg mysql "skipping MySQL backups for ${HOSTNAME}\n"
 
     return ${ret}
   }
 
-  mysql_directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/mysql"
+  local __directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/mysql"
 
   local _mysql_options=(
     -h ${MYSQL_HOST}
@@ -34,7 +34,7 @@ run() {
     --force
     --quiet
   )
-  local _tmpdir=${MYSQL_TMPDIR}
+  local _tmpdir=${_TMPDIR}
 
   local _databases=(${MYSQL_DATABASES[@]})
 
@@ -62,12 +62,12 @@ run() {
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
 
     __rclone_copy_complete \
-      --s3-path=${mysql_directory} \
+      --s3-path=${__directory} \
       --file=${_tmpdir}/${database}.sql.gz \
-      --keep-daily=${MYSQL_KEEP_LAST_DAILY} \
-      --keep-weekly=${MYSQL_KEEP_LAST_WEEKLY} \
-      --keep-monthly=${MYSQL_KEEP_LAST_MONTHLY} \
-      --keep-annually=${MYSQL_KEEP_LAST_ANNUALLY} &> ${_LOGDIR}/mysql.log-${_CURRENT_DATE}
+      --keep-daily=${_KEEP_LAST_DAILY} \
+      --keep-weekly=${_KEEP_LAST_WEEKLY} \
+      --keep-monthly=${_KEEP_LAST_MONTHLY} \
+      --keep-annually=${_KEEP_LAST_ANNUALLY} &> ${_LOGDIR}/mysql.log-${_CURRENT_DATE}
 
     [ $? -ne 0 ] && {
       __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
@@ -82,13 +82,13 @@ run() {
   __log_script_msg mysql "finish backup of databases\n"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
-    [ "${MYSQL_BACKUP_MODE}" == "${__BACKUP_MODE_COMPLETE}" ] && {
-      __keep_last_backups --mode=${MYSQL_BACKUP_MODE} \
-                          --s3-path=${mysql_directory} \
-                          --complete-keep-daily=${MYSQL_KEEP_LAST_DAILY} \
-                          --complete-keep-weekly=${MYSQL_KEEP_LAST_WEEKLY} \
-                          --complete-keep-monthly=${MYSQL_KEEP_LAST_MONTHLY} \
-                          --complete-keep-annually=${MYSQL_KEEP_LAST_ANNUALLY}
+    [ "${_BACKUP_MODE}" == "${__BACKUP_MODE_COMPLETE}" ] && {
+      __keep_last_backups --mode=${_BACKUP_MODE} \
+                          _path=${__directory} \
+                          --complete-keep-daily=${_KEEP_LAST_DAILY} \
+                          --complete-keep-weekly=${_KEEP_LAST_WEEKLY} \
+                          --complete-keep-monthly=${_KEEP_LAST_MONTHLY} \
+                          --complete-keep-annually=${_KEEP_LAST_ANNUALLY}
     }
   }
 
@@ -103,9 +103,9 @@ checking_vars() {
     return ${__RETURNCODE_SCRIPT_ERROR_ANY}
   }
 
-  [ -n "${MYSQL_BACKUP_MODE}" ] && {
-    [ "${MYSQL_BACKUP_MODE}" != "${__BACKUP_MODE_COMPLETE}" ] && {
-      __log_script_msg mysql "${__FAIL} backup mode not support, support MYSQL_BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
+  [ -n "${_BACKUP_MODE}" ] && {
+    [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_COMPLETE}" ] && {
+      __log_script_msg mysql "${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
 
       return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
     }
