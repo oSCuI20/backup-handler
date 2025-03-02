@@ -7,7 +7,6 @@
 
 
 run() {
-  ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
   __log_script_msg files "starting backup files for ${HOSTNAME}\n"
@@ -15,7 +14,7 @@ run() {
   ! ${_RUN_BACKUP} && {
     __log_script_msg files "skipping backup files for ${HOSTNAME}\n"
 
-    return ${ret}
+    return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
 #   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
@@ -37,8 +36,8 @@ run() {
 
 
 checking_vars() {
-  [ -z "${_BACKUP_DIR}" ] && {
-    __log_script_msg files "${__FAIL} _BACKUP_DIR not defined, cannot run the script\n"
+  [ -z "${_BACKUP_FILES}" ] && {
+    __log_script_msg files "${__FAIL} _BACKUP_FILES not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }

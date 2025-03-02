@@ -19,3 +19,12 @@
 
 # _BACKUP_DIRECTORIES=
 # _BACKUP_FILES=
+
+# MySQL values
+# MYSQL_HOST=
+# MYSQL_USER=
+# MYSQL_PASS=
+# MYSQL_PORT=
+
+# MYSQL_DATABASES=
+# MYSQL_DATABASES_IGNORE=(information_schema performance_schema mysql)

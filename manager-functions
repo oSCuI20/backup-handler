@@ -12,7 +12,13 @@ __logger() {
   local __icon=$1
   local __msg=(${@/${__icon}/})
 
-  echo -en "${__icon} ${__msg[@]}"
+  ${_LOGGING} && ! ${_QUIET} && {
+    echo -en "${__icon} ${__msg[@]}"
+  }
+
+  ${_LOGGING} && {
+    echo -en "${__icon} ${__msg[@]}" >> ${_LOGDIR}/backup-log-${_CURRENT_DATE}
+  }
 
   [ "${__icon}" == "${__ERROR}" ] && exit 1
 
@@ -323,11 +329,11 @@ __keep_last_backups() {
     shift
   done
 
-  [ "${_mode}" != "${__BACKUP_MODE_INCREMENT}" ] && {
+  [ "${_mode}" == "${__BACKUP_MODE_INCREMENT}" ] && {
     __keep ${_s3path}${__s3_increment} ${_keep_last_increment}
   }
 
-  [ "${_mode}" != "${__BACKUP_MODE_COMPLETE}" ] && {
+  [ "${_mode}" == "${__BACKUP_MODE_COMPLETE}" ] && {
     local _run_annually=$(/bin/date -d ${_CURRENT_DATE} +%j)
     local _run_monthly=$(/bin/date -d ${_CURRENT_DATE} +%d)
     local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
@@ -360,20 +366,22 @@ __keep() {
   local _remote_dir=$1
   local _keep_last=$2
 
-  __logger ${__INFO} keep last ${_keep_last} backups, path: ${_remote_dir}\n
+  __logger ${__INFO} "keep last ${_keep_last} backups, path: ${_remote_dir}\n"
 
   local _retention=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${remote_dir} | \
                       /usr/bin/awk '{print $5}' | \
                       /usr/bin/sort))
 
+  __logger ${__INFO} "retentions ${#_retention[@]} of ${_KEEP_LAST_INCREMENT:unlimit}\n"
+
   while [ ${#_retention[@]} -gt ${_keep_last} ]; do
     local __remove_filename=${_remote_dir}/${_retention[0]}
 
-    __logger ${__INFO} trying remove directory ${__remove_filename}\n
+    __logger ${__INFO} "trying remove directory ${__remove_filename}\n"
 
     echo "/usr/bin/rclone --config=${_CONFIG_RCLONE} delete ${__remove_filename}"
     [ $? -ne 0 ] && {
-      __logger ${__FAIL} can not remove ${__remove_filename}\n
+      __logger ${__FAIL} "can not remove ${__remove_filename}\n"
     }
 
     local _retention=(${_retention[@]:1:${#_retention[@]}})  # remove first element
@@ -381,7 +389,7 @@ __keep() {
 }
 
 
-# populates default vars
+# set default vars
 #
 set_script_vars() {
   IFS=$'\n'
@@ -403,6 +411,8 @@ set_script_vars() {
 }
 
 
+# unset global variables loaded by files conf
+#
 unset_script_vars() {
   local fileconf=$1
 
@@ -411,28 +421,4 @@ unset_script_vars() {
     __logger ${__INFO} "unset ${varname%%=*}\n"
     unset ${varname%%=*}
   done
-}
-
-#
-# function populates global vars
-# $1 script name
-checking_global_vars() {
-  local envname=${1^^}
-
-  [[ "${envname}" =~ ^[a-zA-Z_]*$ ]] || {
-    return ${__RETURNCODE_CHECKING_GLOBAL_VARS}
-  }
-
-  local varnames=($(set | /bin/grep '^__DEFAULT'))
-
-  for varname in ${varnames[@]}; do
-    local _vname=${envname}${varname/'__DEFAULT'/}
-    local _exists=$(set | /bin/grep "^${_vname%%=*}")
-    [ "${_exists}" == "" ] && {
-      eval "${_vname}"
-    }
-
-  done
-
-  return ${__RETURNCODE_OK}
 }

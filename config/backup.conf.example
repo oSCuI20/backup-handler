@@ -12,23 +12,18 @@ __DEFAULT_RUN_BACKUP=false
 
 __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
-#__DEFAULT_KEEP_LAST_INCREMENT=
+__DEFAULT_KEEP_LAST_INCREMENT=
 __DEFAULT_KEEP_LAST_DAILY=0      # keep last daily
 __DEFAULT_KEEP_LAST_WEEKLY=0     # keep last day of the week
 __DEFAULT_KEEP_LAST_MONTHLY=0    # keep last day of the month
 __DEFAULT_KEEP_LAST_ANNUALLY=0   # keep last day of the year
 
-__DEFAULT_BACKUP_DIR=
+__DEFAULT_BACKUP_DIRECTORIES=
+__DEFAULT_BACKUP_FILES=
 
-# Send email
-EMAIL= #true|false
-EMAILADDR=
-EMAILSUBJECT="Backup host01"
-
-# Slack notifications
-# Defaults keys, title and msg ({"title": "Backups success", "msg": "backups finish at ..."})
-SLACK= #true|false
-CHANNEL=
+# default notifications
+__DEFAULT_NOTIFICATIONS_EMAIL=false
+__DEFAULT_NOTIFICATIONS_SLACK=false
 
 # VBox values
 TEMPDIR=/local/backups

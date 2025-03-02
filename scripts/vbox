@@ -5,7 +5,6 @@
 
 
 run() {
-  ret=${__RETURNCODE_SCRIPT_NOTHING}
   HOSTNAME="$(/bin/hostname -f)"
 
   __log_script_msg vbox "starting synchronization for ${HOSTNAME}\n"
@@ -13,10 +12,10 @@ run() {
   ! ${_RUN_BACKUP} && {  # skip synchronization
     __log_script_msg vbox "skipping synchronization for ${HOSTNAME}\n"
 
-    return ${ret}
+    return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-  local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
+  local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/virtualbox
 
   # ${_RUN_BACKUP_VBOX} && {
   #   /bin/echo ""
@@ -51,6 +50,12 @@ run() {
 
 
 checking_vars() {
+  [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_COMPLETE}" ] && {
+    __log_script_msg vbox "${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
+
+    return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
+  }
+
   [ -z "${VBOX_VM}" ] && {
     __log_script_msg vbox "${__FAIL} VBOX_VM not defined\n"
 

@@ -21,13 +21,15 @@ __DEFAULT_QUIET=true
 __DEFAULT_LOGGING=true
 __DEFAULT_TMPDIR=/var/tmp/backup
 
+__DEFAULT_RUN_BACKUP=false
+__DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
+
+__DEFAULT_BACKUP_DIRECTORIES=
+__DEFAULT_BACKUP_FILES=
+
 # default rclone backups options
 __DEFAULT_RCLONE_REMOTE_BACKUP=
 __DEFAULT_RCLONE_EXTRA_OPTIONS=
-
-__DEFAULT_RUN_BACKUP=false
-
-__DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 #__DEFAULT_KEEP_LAST_INCREMENT=
 __DEFAULT_KEEP_LAST_DAILY=0      # keep last daily
@@ -35,7 +37,13 @@ __DEFAULT_KEEP_LAST_WEEKLY=0     # keep last day of the week
 __DEFAULT_KEEP_LAST_MONTHLY=0    # keep last day of the month
 __DEFAULT_KEEP_LAST_ANNUALLY=0   # keep last day of the year
 
-__DEFAULT_BACKUP_DIR=
+# default notifications
+__DEFAULT_NOTIFICATIONS_SCRIPTS=(
+  ${_ROOT}/notifications/email
+  ${_ROOT}/notifications/slack
+)
+__DEFAULT_NOTIFICATIONS_EMAIL=false
+__DEFAULT_NOTIFICATIONS_SLACK=false
 
 # return code for functions
 __RETURNCODE_OK=0
