@@ -27,7 +27,6 @@ __logger() {
 __log_script_msg() {
   local __script_name=$1
   local __msg=$(echo $@ | sed -e "s/^${__script_name} //g")
-  # local __logfile=${_LOGDIR}/${__script_name}.log-${_CURRENT_DATE}
 
   ! ${_QUIET} && {
     __logger ${__INFO} "[${__script_name}] ${__msg[@]}"
@@ -379,7 +378,7 @@ __keep() {
 
   __logger ${__INFO} "keep last ${_keep_last} backups, path: ${_remote_dir}\n"
 
-  local _retention=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${remote_dir} | \
+  local _retention=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${_remote_dir} | \
                       /usr/bin/awk '{print $5}' | \
                       /usr/bin/sort))
 
