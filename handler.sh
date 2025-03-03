@@ -11,13 +11,13 @@ _CONFIG_FILE="${_CONFIG_DIR}/backup.conf"
 _CONFIG_RCLONE="${_ROOT}/config/rclone.conf"
 _SCRIPTS_DIR="${_ROOT}/scripts"
 _LOGDIR="${_ROOT}/logs"
-_PIDFILE=/var/run/hanled-backup.locked
+_PIDFILE=/var/run/backup-handler.locked
 
 . ${_ROOT}/manager-functions
 
 # default vars
 __DEFAULT_DEBUG=false
-__DEFAULT_QUIET=true
+__DEFAULT_QUIET=false
 __DEFAULT_LOGGING=true
 __DEFAULT_TMPDIR=/var/tmp/backup
 
@@ -64,6 +64,8 @@ __RESTORE_IFS=$IFS
 
 main() {
   parse_arguments "$@"  #parse arguments and load configs
+
+  __locked
 
   load_fileconf ${_CONFIG_FILE}
 
@@ -174,9 +176,9 @@ parse_arguments() {
   }
 
   [ ! -d ${_LOGDIR} ] && {
-    __logger ${__WARN} "Not found ${_LOGDIR}, creating logs directory\n"
-
     mkdir -p "${_LOGDIR}"
+
+    __logger ${__WARN} "Not found ${_LOGDIR}, creating logs directory\n"
   }
 
 }  #parse_arguments
