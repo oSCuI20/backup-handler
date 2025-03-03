@@ -23,6 +23,7 @@ __DEFAULT_LOGGING=true
 __DEFAULT_TMPDIR=/var/tmp/backup
 
 __DEFAULT_RUN_BACKUP=false
+__DEFAULT_RUN_BACKUP_IN=daily # daily, weekly, monthly, annually
 __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 __DEFAULT_BACKUP_DIRECTORIES=

@@ -289,11 +289,9 @@ __rclone_copy_complete() {
   done
 }
 
-# $1 => mode (0|1)
-#      0 => increment
-#      1 => complete
-# $2 => s3 object, full path, <rclone-profile>:/s3-object/<hostname>/<script-name>
-# $3 => temporal directory to save backups in local
+
+# keep last backups
+#
 __keep_last_backups() {
   while [ $# -ge 1 ]; do
     local key=$1
@@ -396,6 +394,33 @@ __keep() {
 
     local _retention=(${_retention[@]:1:${#_retention[@]}})  # remove first element
   done
+}
+
+
+# run script if is needly
+__run_script() {
+  [ "${_RUN_BACKUP_IN}" == "daily" ] && ${_RUN_BACKUP} && {
+    return ${__RETURNCODE_OK}
+  }
+
+  ${_RUN_BACKUP} && {
+    local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
+    [ "${_RUN_BACKUP_IN}" == "weekly" ] && [ "${_run_weekly}" == "1" ] && {
+      return ${__RETURNCODE_OK}
+    }
+
+    local _run_monthly=$(/bin/date -d ${_CURRENT_DATE} +%d)
+    [ "${_RUN_BACKUP_IN}" == "monthly" ] && [ "${_run_monthly}" == "1" ] && {
+      return ${__RETURNCODE_OK}
+    }
+
+    local _run_annually=$(/bin/date -d ${_CURRENT_DATE} +%j)
+    [ "${_RUN_BACKUP_IN}" == "annually" ] && [ "${_run_annually}" == "1" ] && {
+      return ${__RETURNCODE_OK}
+    }
+  }
+
+  return ${__RETURNCODE_SCRIPT_NOTHING}
 }
 
 

@@ -9,6 +9,12 @@ __DEFAULT_RCLONE_EXTRA_OPTIONS=
 
 __DEFAULT_RUN_BACKUP=false
 
+# daily run every day
+# weekly run first day of week, start in monday
+# monthly run first day of month
+# annually run first day of year
+__DEFAULT_RUN_BACKUP_IN=daily
+
 __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 __DEFAULT_KEEP_LAST_INCREMENT=

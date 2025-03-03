@@ -9,6 +9,7 @@
 # _RCLONE_EXTRA_OPTIONS=
 
 # _RUN_BACKUP=false
+# _RUN_BACKUP_IN=daily # daily, weekly, monthly, annually
 
 # _BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
