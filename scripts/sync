@@ -7,7 +7,7 @@
 run() {
   HOSTNAME="$(/bin/hostname -f)"
 
-  ! __run_script && {  # skip synchronization
+  ! __run_script && {
     __log_script_msg sync "skipping synchronization for ${HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}

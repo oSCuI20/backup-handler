@@ -410,12 +410,12 @@ __run_script() {
     }
 
     local _run_monthly=$(/bin/date -d ${_CURRENT_DATE} +%d)
-    [ "${_RUN_BACKUP_IN}" == "monthly" ] && [ "${_run_monthly}" == "1" ] && {
+    [ "${_RUN_BACKUP_IN}" == "monthly" ] && [ "${_run_monthly}" == "01" ] && {
       return 0
     }
 
     local _run_annually=$(/bin/date -d ${_CURRENT_DATE} +%j)
-    [ "${_RUN_BACKUP_IN}" == "annually" ] && [ "${_run_annually}" == "1" ] && {
+    [ "${_RUN_BACKUP_IN}" == "annually" ] && [ "${_run_annually}" == "001" ] && {
       return 0
     }
   }

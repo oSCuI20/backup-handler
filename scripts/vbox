@@ -7,13 +7,13 @@
 run() {
   HOSTNAME="$(/bin/hostname -f)"
 
-  __log_script_msg vbox "starting synchronization for ${HOSTNAME}\n"
-
-  ! ${_RUN_BACKUP} && {  # skip synchronization
+  ! __run_script && {
     __log_script_msg vbox "skipping synchronization for ${HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
+
+  __log_script_msg vbox "starting synchronization for ${HOSTNAME}\n"
 
   local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/virtualbox
   local _tmpdir=${_TMPDIR}
