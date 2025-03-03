@@ -36,8 +36,6 @@ __log_script_msg() {
   local msg=${__NOTHING}"[$(/bin/date '+%Y-%m-%d %H:%M:%S')] [${__script_name}] ${__msg[@]}"
 
   __logger ${msg}
-
-  ${_LOGGING} && __logger ${msg} >> ${__logfile}
 }
 
 
