@@ -327,7 +327,11 @@ __keep_last_backups() {
     shift
   done
 
+  __logger ${__INFO} "backup mode ${_mode}\n"
+
   [ "${_mode}" == "${__BACKUP_MODE_INCREMENT}" ] && {
+    __logger ${__INFO} "path: ${_s3path}${__s3_increment} - keep last ${_keep_last_increment:-unlimit} backups\n"
+
     __keep ${_s3path}${__s3_increment} ${_keep_last_increment}
   }
 
@@ -337,23 +341,32 @@ __keep_last_backups() {
     local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
     local _run_daily=${_keep_last_daily:-0}
 
-    [ ${_keep_last_annually:-0} -gt 0 ] && {
-      [ "${_run_annually}" == "001" ] && \
+    [ "${_run_annually}" == "001" ] && {
+      __logger ${__INFO} "annually: path: ${_s3path}${__s3_complete_annually} - keep last ${_keep_last_annually:-unlimit} backups\n"
+
+      [ ${_keep_last_annually:-0} -gt 0 ] && \
         __keep ${_s3path}${__s3_complete_annually} ${_keep_last_annually}
     }
 
-    [ ${_keep_last_monthly:-0} -gt 0 ] && {
-      [ "${_run_monthly}" == "01" ] && \
+    [ "${_run_monthly}" == "01" ] && {
+      __logger ${__INFO} "monthly: path: ${_s3path}${__s3_complete_monthly} - keep last ${_keep_last_monthly:-unlimit} backups\n"
+
+      [ ${_keep_last_monthly:-0} -gt 0 ] && \
         __keep ${_s3path}${__s3_complete_monthly} ${_keep_last_monthly}
     }
 
-    [ ${_keep_last_weekly:-0} -gt 0 ] && {
-      [ "${_run_weekly}" == "1" ] && \
+    [ "${_run_weekly}" == "1" ] && {
+      __logger ${__INFO} "weekly: path: ${_s3path}${__s3_complete_weekly} - keep last ${_keep_last_weekly:-unlimit} backups\n"
+
+      [ ${_keep_last_weekly:-0} -gt 0 ] && \
         __keep ${_s3path}${__s3_complete_weekly} ${_keep_last_weekly}
     }
 
-    [ ${_run_daily} -gt 0 ] && \
+    __logger ${__INFO} "daily: path: ${_s3path}${__s3_complete_daily} - keep last ${_keep_last_daily:-unlimit} backups\n"
+
+    [ ${_run_daily} -gt 0 ] && {
       __keep ${_s3path}${__s3_complete_daily} ${_keep_last_daily}
+    }
   }
 }
 
