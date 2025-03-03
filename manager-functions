@@ -12,12 +12,14 @@ __logger() {
   local __icon=$1
   local __msg=(${@/${__icon}/})
 
+  local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg[@]}"
+
   ${_LOGGING} && ! ${_QUIET} && {
-    echo -en "${__icon} ${__msg[@]}"
+    echo -en ${logmsg}
   }
 
   ${_LOGGING} && {
-    echo -en "${__icon} ${__msg[@]}" >> ${_LOGDIR}/backup-log-${_CURRENT_DATE}
+    echo -en ${logmsg} >> ${_LOGFILE}
   }
 
   [ "${__icon}" == "${__ERROR}" ] && exit 1
@@ -31,11 +33,9 @@ __logger() {
 __log_script_msg() {
   local __script_name=$1
   local __msg=$(echo $@ | sed -e "s/^${__script_name} //g")
-  local __logfile=${_LOGDIR}/${__script_name}.log-${_CURRENT_DATE}
+  # local __logfile=${_LOGDIR}/${__script_name}.log-${_CURRENT_DATE}
 
-  local msg=${__NOTHING}"[$(/bin/date '+%Y-%m-%d %H:%M:%S')] [${__script_name}] ${__msg[@]}"
-
-  __logger ${msg}
+  __logger ${__INFO} "[${__script_name}] ${__msg[@]}"
 }
 
 
@@ -432,4 +432,6 @@ unset_script_vars() {
     __logger ${__INFO} "unset ${varname%%=*}\n"
     unset ${varname%%=*}
   done
+
+  unset _LOGFILE
 }

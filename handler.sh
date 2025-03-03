@@ -11,6 +11,7 @@ _CONFIG_FILE="${_CONFIG_DIR}/backup.conf"
 _CONFIG_RCLONE="${_ROOT}/config/rclone.conf"
 _SCRIPTS_DIR="${_ROOT}/scripts"
 _LOGDIR="${_ROOT}/logs"
+_LOGFILE=
 _PIDFILE=/var/run/backup-handler.locked
 
 . ${_ROOT}/manager-functions
@@ -75,6 +76,11 @@ main() {
     }
 
     . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
+
+    [ -z "${_LOGFILE}" ] && {
+      _LOGFILE="${_LOGDIR}/${script}.log-${_CURRENT_DATE}"
+    }
+
     . ${_SCRIPTS_DIR}/${script}              # load script functions, `checking_vars` and `run`
 
     set_script_vars

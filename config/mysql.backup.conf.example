@@ -2,6 +2,8 @@
 # _DEBUG=false
 # _QUIET=true
 # _LOGGING=true
+# _LOGFILE=
+
 # _TMPDIR=/var/tmp/backup
 
 # _RCLONE_REMOTE_BACKUP=
