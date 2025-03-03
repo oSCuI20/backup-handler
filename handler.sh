@@ -13,12 +13,12 @@ _SCRIPTS_DIR="${_ROOT}/scripts"
 _LOGDIR="${_ROOT}/logs"
 _LOGFILE=
 _PIDFILE=/var/run/backup-handler.locked
+_QUIET=false
 
 . ${_ROOT}/manager-functions
 
 # default vars
 __DEFAULT_DEBUG=false
-__DEFAULT_QUIET=false
 __DEFAULT_LOGGING=true
 __DEFAULT_TMPDIR=/var/tmp/backup
 
@@ -149,7 +149,7 @@ parse_arguments() {
         _SCRIPTS_DIR=$(/bin/readlink -f "${value}")
         ;;
       --quiet|-q)
-        _QUIET=false
+        _QUIET=true
         ;;
       --pid-file|-p)
         _PIDFILE=$value

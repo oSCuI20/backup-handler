@@ -1,6 +1,5 @@
 ### run backups using ./scripts/files
 # _DEBUG=false
-# _QUIET=true
 # _LOGGING=true
 # _LOGFILE=
 

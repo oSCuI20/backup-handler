@@ -1,6 +1,5 @@
 ### default options
 __DEFAULT_DEBUG=false
-__DEFAULT_QUIET=true
 __DEFAULT_LOGGING=true
 __DEFAULT_TMPDIR=/var/tmp/backup
 

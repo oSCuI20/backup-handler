@@ -14,13 +14,7 @@ __logger() {
 
   local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg[@]}"
 
-  ${_LOGGING} && ! ${_QUIET} && {
-    echo -en ${logmsg}
-  }
-
-  ${_LOGGING} && {
-    echo -en ${logmsg} >> ${_LOGFILE}
-  }
+  echo -en ${logmsg}
 
   [ "${__icon}" == "${__ERROR}" ] && exit 1
 
@@ -35,7 +29,13 @@ __log_script_msg() {
   local __msg=$(echo $@ | sed -e "s/^${__script_name} //g")
   # local __logfile=${_LOGDIR}/${__script_name}.log-${_CURRENT_DATE}
 
-  __logger ${__INFO} "[${__script_name}] ${__msg[@]}"
+  ! ${_QUIET} && {
+    __logger ${__INFO} "[${__script_name}] ${__msg[@]}"
+  }
+
+  ${_LOGGING} && {
+    __logger ${__INFO} "[${__script_name}] ${__msg[@]}" >> ${_LOGFILE}
+  }
 }
 
 
