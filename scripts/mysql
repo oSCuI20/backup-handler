@@ -55,7 +55,8 @@ run() {
 
   __log_script_msg mysql "running backup of databases ${_databases[@]}\n"
 
-  ret=${__RETURNCODE_OK}
+  local ret=${__RETURNCODE_OK}
+
   for database in ${_databases[@]}; do
     /usr/bin/mysqldump ${_mysql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
@@ -69,7 +70,7 @@ run() {
       --keep-annually=${_KEEP_LAST_ANNUALLY} &> ${_LOGDIR}/mysql.log-${_CURRENT_DATE}
 
     [ $? -ne 0 ] && {
-      __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
+      __log_script_msg mysql "${__FAIL} database backup failed! ${database}\n"
 
       ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
@@ -81,14 +82,12 @@ run() {
   __log_script_msg mysql "finish backup of databases\n"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
-    [ "${_BACKUP_MODE}" == "${__BACKUP_MODE_COMPLETE}" ] && {
-      __keep_last_backups --mode=${_BACKUP_MODE} \
-                          _path=${__directory} \
-                          --complete-keep-daily=${_KEEP_LAST_DAILY} \
-                          --complete-keep-weekly=${_KEEP_LAST_WEEKLY} \
-                          --complete-keep-monthly=${_KEEP_LAST_MONTHLY} \
-                          --complete-keep-annually=${_KEEP_LAST_ANNUALLY}
-    }
+    __keep_last_backups --mode=${_BACKUP_MODE} \
+                        --s3-path=${__directory} \
+                        --complete-keep-daily=${_KEEP_LAST_DAILY} \
+                        --complete-keep-weekly=${_KEEP_LAST_WEEKLY} \
+                        --complete-keep-monthly=${_KEEP_LAST_MONTHLY} \
+                        --complete-keep-annually=${_KEEP_LAST_ANNUALLY}
   }
 
   return ${ret}

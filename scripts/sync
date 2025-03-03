@@ -16,6 +16,7 @@ run() {
   }
 
   local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
+  local ret=${__RETURNCODE_OK}
 
   for directory in ${_BACKUP_DIRECTORIES[@]}; do
     __rclone_sync_run \
@@ -26,6 +27,7 @@ run() {
     [ $? -ne 0 ] && {
       __log_script_msg sync "${__FAIL} synchronization ${directory} failure\n"
 
+      local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 
@@ -34,7 +36,7 @@ run() {
 
   __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
 
-  [ ${_KEEP_LAST_INCREMENT:-0} -ne 0 ] && {
+  [ ${ret} -ne ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
                         --s3-path=${__directory} \
                         --increment-keep=${_KEEP_LAST_INCREMENT}

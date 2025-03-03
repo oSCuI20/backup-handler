@@ -30,7 +30,7 @@ run() {
     --force
     --quiet
   )
-  local _tmpdir=${TEMPDIR:-/var/tmp}
+  local _tmpdir=${_TMPDIR}
 
   local _databases=(${POSTGRESQL_DATABASES[@]})
 
@@ -50,7 +50,7 @@ run() {
 
   __log_script_msg postgresql "running backup of databases ${_databases[@]}\n"
 
-  ret=${__RETURNCODE_OK}
+  local ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
     /usr/bin/pg_dump ${_psql_options[@]} ${_dump_options[@]} --databases ${database} | \
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
@@ -68,7 +68,7 @@ run() {
     [ $? -ne 0 ] && {
       __log_script_msg mysql "${__FAIL} database backup failed! ${database}"
 
-      ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 

@@ -372,9 +372,9 @@ __keep() {
                       /usr/bin/awk '{print $5}' | \
                       /usr/bin/sort))
 
-  __logger ${__INFO} "retentions ${#_retention[@]} of ${_KEEP_LAST_INCREMENT:unlimit}\n"
+  __logger ${__INFO} "retentions ${#_retention[@]} of ${_keep_last:-unlimit}\n"
 
-  while [ ${#_retention[@]} -gt ${_keep_last} ]; do
+  while [ ${#_retention[@]} -gt ${_keep_last:-0} ]; do
     local __remove_filename=${_remote_dir}/${_retention[0]}
 
     __logger ${__INFO} "trying remove directory ${__remove_filename}\n"

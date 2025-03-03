@@ -16,36 +16,63 @@ run() {
   }
 
   local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/virtualbox
+  local _tmpdir=${_TMPDIR}
 
-  # ${_RUN_BACKUP_VBOX} && {
-  #   /bin/echo ""
-  #   checking_global_vars
-  #   now=$(/bin/date +%Y%m%d)
+  local ret=${__RETURNCODE_OK}
 
-  #   week_now=$(/bin/date +%u)
-  #   [ ${WEEK_DAY} -ne ${week_now} ] && exit $ret
+  for vm in ${VBOX_VMS[@]}; do
+    local _vmvboxpath=${VBOX_PATH}/${vm}
+    local _tmpfile=${_tmpdir}/${vm}.tar.gz
 
-  #   ${SERVER} && HOSTNAME="${SSH_HOST}" || HOSTNAME="$(/bin/hostname -f)"
+    /bin/su -l vbox -c "/usr/bin/VBoxManage showvminfo ${vm}" | \
+      /bin/grep -q running 2> /dev/null
 
-  #   backup_dir="${ARCHIVEROOT}/${HOSTNAME}/vbox"
-  #   storage="${backup_dir}/${now}"
-  #   sshauth="--host=$SSH_HOST --user=$SSH_USER --port=$SSH_PORT --keyfile=$SSH_KEY"
+    [ $? -ne 0 ] && {
+      __log_script_msg vbox "${__FAIL} the virtual machine ${vm} is running or not exists\n"
 
-  #   printf "Starting VBox backup, at `/bin/date`\n"
+      local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      continue
+    }
 
-  #   ${SERVER} && main_backup_server || main_backup_client
-  #   ret=$?
+    /bin/tar -czf ${_tmpfile} -C ${_vmvboxpath} .
 
-  #   ${SERVER} && {
-  #     /bin/du -sh ${backup_dir}
-  #   } || {
-  #     _ssh_exec ${sshauth} --cmd="/bin/du -sh ${backup_dir}"
-  #   }
+    [ $? -ne 0 ] && {
+      __log_script_msg vbox "${__FAIL} can not run command -> /bin/tar -czf ${_tmpfile} -C ${_vmvboxpath} .\n"
 
-  #   __log_script_msg vbox "Finish VBox backup, at `/bin/date`\n"
-  # }  #${BACKUP_VBOX}
+      local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      continue
+    }
 
-  # exit $ret
+    __rclone_copy_complete \
+      --s3-path=${__directory} \
+      --file=${_tmpfile} \
+      --keep-daily=${_KEEP_LAST_DAILY} \
+      --keep-weekly=${_KEEP_LAST_WEEKLY} \
+      --keep-monthly=${_KEEP_LAST_MONTHLY} \
+      --keep-annually=${_KEEP_LAST_ANNUALLY} &> ${_LOGDIR}/vbox.log-${_CURRENT_DATE}
+
+    [ $? -ne 0 ] && {
+      __log_script_msg vbox "${__FAIL} virtualbox ${vm} backup failed!\n"
+
+      local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      continue
+    }
+
+    __log_script_msg vbox "$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)\n"
+  done
+
+  __log_script_msg vbox "virtualbox vm backpus finish!\n"
+
+  [ ${ret} -eq ${__RETURNCODE_OK} ] && {
+    __keep_last_backups --mode=${_BACKUP_MODE} \
+                        --s3-path=${__directory} \
+                        --complete-keep-daily=${_KEEP_LAST_DAILY} \
+                        --complete-keep-weekly=${_KEEP_LAST_WEEKLY} \
+                        --complete-keep-monthly=${_KEEP_LAST_MONTHLY} \
+                        --complete-keep-annually=${_KEEP_LAST_ANNUALLY}
+  }
+
+  return ${ret}
 }
 
 
@@ -56,8 +83,8 @@ checking_vars() {
     return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
   }
 
-  [ -z "${VBOX_VM}" ] && {
-    __log_script_msg vbox "${__FAIL} VBOX_VM not defined\n"
+  [ -z "${VBOX_VMS}" ] && {
+    __log_script_msg vbox "${__FAIL} VBOX_VMS not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
