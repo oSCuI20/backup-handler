@@ -67,7 +67,7 @@ run() {
       --keep-daily=${_KEEP_LAST_DAILY} \
       --keep-weekly=${_KEEP_LAST_WEEKLY} \
       --keep-monthly=${_KEEP_LAST_MONTHLY} \
-      --keep-annually=${_KEEP_LAST_ANNUALLY} &>> ${_LOGDIR}/mysql.log-${_CURRENT_DATE}
+      --keep-annually=${_KEEP_LAST_ANNUALLY} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
       __log_script_msg mysql "${__FAIL} database backup failed! ${database}\n"

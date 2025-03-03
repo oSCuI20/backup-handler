@@ -49,7 +49,7 @@ run() {
       --keep-daily=${_KEEP_LAST_DAILY} \
       --keep-weekly=${_KEEP_LAST_WEEKLY} \
       --keep-monthly=${_KEEP_LAST_MONTHLY} \
-      --keep-annually=${_KEEP_LAST_ANNUALLY} &> ${_LOGDIR}/vbox.log-${_CURRENT_DATE}
+      --keep-annually=${_KEEP_LAST_ANNUALLY} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
       __log_script_msg vbox "${__FAIL} virtualbox ${vm} backup failed!\n"
@@ -58,7 +58,7 @@ run() {
       continue
     }
 
-    __log_script_msg vbox "$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)\n"
+    __log_script_msg vbox "$(/bin/rm -fv ${_tmpfile})\n"
   done
 
   __log_script_msg vbox "virtualbox vm backpus finish!\n"

@@ -36,7 +36,7 @@ run() {
 
   __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
 
-  [ ${ret} -ne ${__RETURNCODE_OK} ] && {
+  [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
                         --s3-path=${__directory} \
                         --increment-keep=${_KEEP_LAST_INCREMENT}
