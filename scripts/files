@@ -7,17 +7,15 @@
 
 
 run() {
-  HOSTNAME="$(/bin/hostname -f)"
+  __log_script_msg files "starting backup files for ${_HOSTNAME}\n"
 
-  __log_script_msg files "starting backup files for ${HOSTNAME}\n"
-
-  ! ${_RUN_BACKUP} && {
-    __log_script_msg files "skipping backup files for ${HOSTNAME}\n"
+  ! __run_script && {
+    __log_script_msg files "skipping backup files for ${_HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-#   backup_dir="${RCLONE_BACKUP_REMOTE}/${HOSTNAME}/files"
+#   backup_dir="${RCLONE_BACKUP_REMOTE}/${_HOSTNAME}/files"
 
 #   for dir in ${BACKUP_DIR[@]}; do
 #     main="${backup_dir}/main${dir}"
@@ -29,7 +27,7 @@ run() {
 #     __log_script_msg rclone "Finish backup ${dir}\n"
 #   done
 
-#   __log_script_msg rclone "finish backup files ${HOSTNAME}\n"
+#   __log_script_msg rclone "finish backup files ${_HOSTNAME}\n"
 
   return ${ret}
 }

@@ -398,29 +398,31 @@ __keep() {
 
 
 # run script if is needly
+# return 0 => false
+#        1 => true
 __run_script() {
   [ "${_RUN_BACKUP_IN}" == "daily" ] && ${_RUN_BACKUP} && {
-    return 0
+    return 1
   }
 
   ${_RUN_BACKUP} && {
     local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
     [ "${_RUN_BACKUP_IN}" == "weekly" ] && [ "${_run_weekly}" == "1" ] && {
-      return 0
+      return 1
     }
 
     local _run_monthly=$(/bin/date -d ${_CURRENT_DATE} +%d)
     [ "${_RUN_BACKUP_IN}" == "monthly" ] && [ "${_run_monthly}" == "01" ] && {
-      return 0
+      return 1
     }
 
     local _run_annually=$(/bin/date -d ${_CURRENT_DATE} +%j)
     [ "${_RUN_BACKUP_IN}" == "annually" ] && [ "${_run_annually}" == "001" ] && {
-      return 0
+      return 1
     }
   }
 
-  return 1
+  return 0
 }
 
 

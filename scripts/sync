@@ -5,18 +5,16 @@
 
 
 run() {
-  HOSTNAME="$(/bin/hostname -f)"
-
   ! __run_script && {
-    __log_script_msg sync "skipping synchronization for ${HOSTNAME}\n"
+    __log_script_msg sync "skipping synchronization for ${_HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-  local __directory=${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/sync
+  local __directory=${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/sync
   local ret=${__RETURNCODE_OK}
 
-  __log_script_msg sync "starting synchronization for ${HOSTNAME}\n"
+  __log_script_msg sync "starting synchronization for ${_HOSTNAME}\n"
 
   for directory in ${_BACKUP_DIRECTORIES[@]}; do
     __rclone_sync_run \
@@ -34,7 +32,7 @@ run() {
     __log_script_msg sync "synchronization ${directory} completed\n"
   done
 
-  __log_script_msg sync "finish synchronization for ${HOSTNAME}\n"
+  __log_script_msg sync "finish synchronization for ${_HOSTNAME}\n"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \

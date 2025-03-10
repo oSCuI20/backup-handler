@@ -5,17 +5,15 @@
 
 
 run() {
-  HOSTNAME="$(/bin/hostname -f)"
-
   ! __run_script && {
-    __log_script_msg mysql "skipping MySQL backups for ${HOSTNAME}\n"
+    __log_script_msg mysql "skipping MySQL backups for ${_HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-  __log_script_msg mysql "starting MySQL backups for ${HOSTNAME}\n"
+  __log_script_msg mysql "starting MySQL backups for ${_HOSTNAME}\n"
 
-  local __directory="${_RCLONE_REMOTE_BACKUP}/${HOSTNAME}/mysql"
+  local __directory="${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/mysql"
 
   local _mysql_options=(
     -h ${MYSQL_HOST}

@@ -4,6 +4,7 @@
 #
 _ROOT="$(/bin/dirname $(/bin/readlink -f $0))"
 _CURRENT_DATE=$(/bin/date +%Y%m%d)
+_HOSTNAME="$(/bin/hostname -f)"
 
 # default arguments
 _CONFIG_DIR="${_ROOT}/config"
