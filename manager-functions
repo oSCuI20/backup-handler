@@ -387,7 +387,8 @@ __keep() {
 
     __logger ${__INFO} "trying remove directory ${__remove_filename}\n"
 
-    echo "/usr/bin/rclone --config=${_CONFIG_RCLONE} delete ${__remove_filename}"
+    __rclone_run --command=delete --args=${__remove_filename}
+
     [ $? -ne 0 ] && {
       __logger ${__FAIL} "can not remove ${__remove_filename}\n"
     }
