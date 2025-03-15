@@ -220,19 +220,19 @@ __rclone_copy_run() {
     shift
   done
 
-  [ -f "${_localfile}" ] && {
-    __logger ${__FAIL} localfile not found in path ${_localfile}\n
+  [ ! -f "${_localfile}" ] && {
+    __logger ${__FAIL} "localfile not found in path ${_localfile}\n"
 
     return ${__RETURNCODE_SCRIPT_RCLONE_LOCALFILE_NOTFOUND}
   }
 
-  __logger ${__INFO} file ${_localfile} to ${_s3path}\n
+  __logger ${__INFO} "file ${_localfile} to ${_s3path}\n"
 
   __rclone_run --command=copy --args="${_localfile} ${_s3path}"
 
   local retval=$?
   [ ${retval} -ne 0 ] && {
-    __logger ${__FAIL} can not copy ${_localfile} to ${_s3path}\n
+    __logger ${__FAIL} "can not copy ${_localfile} to ${_s3path}\n"
   }
 
   return ${retval}
