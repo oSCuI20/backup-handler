@@ -25,6 +25,7 @@ __DEFAULT_TMPDIR=/var/tmp/backup
 
 __DEFAULT_RUN_BACKUP=false
 __DEFAULT_RUN_BACKUP_IN=daily # daily, weekly, monthly, annually
+__DEFAULT_RUN_BACKUP_IN_DAY=
 __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 __DEFAULT_BACKUP_DIRECTORIES=
@@ -79,9 +80,7 @@ main() {
 
     . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
 
-    [ -z "${_LOGFILE}" ] && {
-      _LOGFILE="${_LOGDIR}/${script}.log-${_CURRENT_DATE}"
-    }
+    _LOGFILE="${_LOGDIR}/${script}.log-${_CURRENT_DATE}"
 
     . ${_SCRIPTS_DIR}/${script}              # load script functions, `checking_vars` and `run`
 
