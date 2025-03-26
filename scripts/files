@@ -19,9 +19,9 @@ run() {
   __log_script_msg files "starting synchronization for ${_HOSTNAME}\n"
 
   for file in ${_BACKUP_FILES[@]}; do
-    __rclone_sync_run \
+    __rclone_copy_run \
       --s3-path=${__file} \
-      --directory=${file} \
+      --file=${file} \
       --keep-increment=${_KEEP_LAST_INCREMENT} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {

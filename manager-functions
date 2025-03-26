@@ -216,6 +216,9 @@ __rclone_copy_run() {
       --file=*)
         local _localfile="${key#*=}"
         ;;
+      --keep-increment=*)
+        local _keep_last_increment="${key#*=}"
+        ;;
     esac
     shift
   done
@@ -228,7 +231,15 @@ __rclone_copy_run() {
 
   __logger ${__INFO} "file ${_localfile} to ${_s3path}\n"
 
-  __rclone_run --command=copy --args="${_localfile} ${_s3path}"
+  local _rclone_options=
+  [ ${_keep_last_increment} -gt 0 ] && {
+    local _rclone_options=("--backup-dir=${_s3path}${__s3_increment}/${_CURRENT_DATE}")
+  }
+
+  local _localdir=$(dirname ${_localfile})
+  __rclone_run --command=copy \
+               --extra="${_rclone_options[@]}" \
+               --args="${_localfile} ${_s3path}/main/${_localdir}"
 
   local retval=$?
   [ ${retval} -ne 0 ] && {
