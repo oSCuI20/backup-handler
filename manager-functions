@@ -407,19 +407,19 @@ __run_script() {
       return 0
 
     local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
-    [ "${_RUN_BACKUP_IN}" == "weekly" ] && [ "${_run_weekly}" == "${RUN_BACKUP_IN_DAY}" ] && {
+    [ "${_RUN_BACKUP_IN}" == "weekly" ] && \
+    [ "${_run_weekly}" == "${_RUN_BACKUP_IN_DAY}" ] && \
       return 0
-    }
 
     local _run_monthly=$(/bin/date -d ${_CURRENT_DATE} +%d)
-    [ "${_RUN_BACKUP_IN}" == "monthly" ] && [ "${_run_monthly}" == "${RUN_BACKUP_IN_DAY}" ] && {
+    [ "${_RUN_BACKUP_IN}" == "monthly" ] && \
+    [ "${_run_monthly}" == "${_RUN_BACKUP_IN_DAY}" ] && \
       return 0
-    }
 
     local _run_annually=$(/bin/date -d ${_CURRENT_DATE} +%j)
-    [ "${_RUN_BACKUP_IN}" == "annually" ] && [ "${_run_annually}" == "${RUN_BACKUP_IN_DAY}" ] && {
+    [ "${_RUN_BACKUP_IN}" == "annually" ] && \
+    [ "${_run_annually}" == "${_RUN_BACKUP_IN_DAY}" ] && \
       return 0
-    }
   }
 
   return 1
