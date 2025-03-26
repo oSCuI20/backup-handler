@@ -7,27 +7,40 @@
 
 
 run() {
-  __log_script_msg files "starting backup files for ${_HOSTNAME}\n"
-
   ! __run_script && {
     __log_script_msg files "skipping backup files for ${_HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-#   backup_dir="${RCLONE_BACKUP_REMOTE}/${_HOSTNAME}/files"
+  local __file=${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/files
+  local ret=${__RETURNCODE_OK}
 
-#   for dir in ${BACKUP_DIR[@]}; do
-#     main="${backup_dir}/main${dir}"
-#     increment="${backup_dir}/increment/${__NOW_DATE}"
-#     rclone_options=("--backup-dir=${increment}")
+  __log_script_msg files "starting synchronization for ${_HOSTNAME}\n"
 
-#     /usr/bin/rclone "${RCLONE_EXTRA_OPTIONS[@]}" --config=${_CONFIG_RCLONE} sync ${rclone_options[@]} ${dir} ${main}
+  for file in ${_BACKUP_FILES[@]}; do
+    __rclone_sync_run \
+      --s3-path=${__file} \
+      --directory=${file} \
+      --keep-increment=${_KEEP_LAST_INCREMENT} &>> ${_LOGFILE}
 
-#     __log_script_msg rclone "Finish backup ${dir}\n"
-#   done
+    [ $? -ne 0 ] && {
+      __log_script_msg files "${__FAIL} synchronization ${file} failure\n"
 
-#   __log_script_msg rclone "finish backup files ${_HOSTNAME}\n"
+      local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
+      continue
+    }
+
+    __log_script_msg files "synchronization ${file} completed\n"
+  done
+
+  __log_script_msg files "finish synchronization for ${_HOSTNAME}\n"
+
+  [ ${ret} -eq ${__RETURNCODE_OK} ] && {
+    __keep_last_backups --mode=${_BACKUP_MODE} \
+                        --s3-path=${__file} \
+                        --increment-keep=${_KEEP_LAST_INCREMENT}
+  }
 
   return ${ret}
 }
@@ -38,6 +51,12 @@ checking_vars() {
     __log_script_msg files "${__FAIL} _BACKUP_FILES not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
+  }
+
+  [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_INCREMENT}" ] && {
+    __log_script_msg sync "${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
+
+    return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
   }
 
   return ${__RETURNCODE_OK}
