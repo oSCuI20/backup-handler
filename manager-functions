@@ -402,11 +402,10 @@ __keep() {
 # return 1 => false
 #        0 => true
 __run_script() {
-  [ "${_RUN_BACKUP_IN}" == "daily" ] && ${_RUN_BACKUP} && {
-    return 0
-  }
-
   ${_RUN_BACKUP} && {
+    [ "${_RUN_BACKUP_IN}" == "daily" ] && \
+      return 0
+
     local _run_weekly=$(/bin/date -d ${_CURRENT_DATE} +%u)
     [ "${_RUN_BACKUP_IN}" == "weekly" ] && \
     [ "${_run_weekly}" == "${RUN_BACKUP_IN_DAY}" ] && \
