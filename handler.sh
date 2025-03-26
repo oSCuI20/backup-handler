@@ -30,7 +30,7 @@ __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 __DEFAULT_BACKUP_DIRECTORIES=
 __DEFAULT_BACKUP_FILES=
-
+__DEFAULT_LOGFILE=
 # default rclone backups options
 __DEFAULT_RCLONE_REMOTE_BACKUP=
 __DEFAULT_RCLONE_EXTRA_OPTIONS=
@@ -78,9 +78,9 @@ main() {
       continue
     }
 
-    . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
-
     _LOGFILE="${_LOGDIR}/${script}.log-${_CURRENT_DATE}"
+
+    . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
 
     . ${_SCRIPTS_DIR}/${script}              # load script functions, `checking_vars` and `run`
 
