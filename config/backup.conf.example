@@ -14,7 +14,11 @@ __DEFAULT_RUN_BACKUP=false
 # monthly run first day of month
 # annually run first day of year
 __DEFAULT_RUN_BACKUP_IN=daily
-
+__DEFAULT_RUN_BACKUP_IN_DAY=
+#   if __DEFAULT_RUN_BACKUP_IN=daily __DEFAULT_RUN_BACKUP_IN_DAY is ignore
+#   if __DEFAULT_RUN_BACKUP_IN=weekly __DEFAULT_RUN_BACKUP_IN_DAY must be set with values 1-7
+#   if __DEFAULT_RUN_BACKUP_IN=monthly __DEFAULT_RUN_BACKUP_IN_DAY must be set with values 01-31
+#   if __DEFAULT_RUN_BACKUP_IN=annually __DEFAULT_RUN_BACKUP_IN_DAY must be set with values 001-365
 __DEFAULT_BACKUP_MODE=${__BACKUP_MODE_COMPLETE:-complete}
 
 __DEFAULT_KEEP_LAST_INCREMENT=
