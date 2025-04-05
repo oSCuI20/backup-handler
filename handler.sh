@@ -44,8 +44,8 @@ __DEFAULT_KEEP_LAST_MONTHLY=0    # keep last day of the month
 __DEFAULT_KEEP_LAST_ANNUALLY=0   # keep last day of the year
 
 # default notifications
-__DEFAULT_NOTIFICATION=  #email, slack, telegram
-__DEFAULT_NOTIFICATION_MESSAGE=
+### email, slack, telegram
+__DEFAULT_NOTIFICATION=
 
 ## telegram integration
 __DEFAULT_TELEGRAM_API=https://api.telegram.org
