@@ -2,7 +2,7 @@
 
 send_notification() {
   local message="$@"
-  local _curl_options=(--get --silent)
+  local _curl_options=(--get --silent --output /dev/null)
   local _url="${_TELEGRAM_API}/bot${_TELEGRAM_TOKEN}"
 
   ${_TELEGRAM_DEBUG} && \
