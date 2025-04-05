@@ -87,14 +87,16 @@ main() {
     . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
 
     . ${_SCRIPTS_DIR}/${script}              # load script functions, `checking_vars` and `run`
+    . ${_NOTIFICATIONS_SCRIPTS_DIR}/dummy    # load dummy send_notification function
 
     set_script_vars
 
     checking_vars || continue
 
-    [ -n "${_NOTIFICATION}" ] && {
-      eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME}"
-    }
+    [ -n "${_NOTIFICATION}" ] && \
+      . ${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}
+
+    send_notification run $0 - script->${script} in ${HOSTNAME}
 
     run; local _result_run=$?
 
@@ -102,15 +104,13 @@ main() {
 
     [ ${_result_run} -ne ${__RETURNCODE_OK} ] && {
       [ -n "${_NOTIFICATION}" ] && {
-        eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} falied!!!"
+        send_notification run $0 - script->${script} in ${HOSTNAME} failed!!!
       }
 
       continue
     }
 
-    [ -n "${_NOTIFICATION}" ] && {
-      eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} successful!!!"
-    }
+    send_notification run $0 - script->${script} in ${HOSTNAME} successful!!!
   done
 }
 
