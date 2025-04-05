@@ -174,6 +174,9 @@ parse_arguments() {
       --quiet|-q)
         _QUIET=true
         ;;
+      --debug|-d)
+        _DEBUG=true
+        ;;
       --pid-file|-p)
         _PIDFILE=$value
         ;;
