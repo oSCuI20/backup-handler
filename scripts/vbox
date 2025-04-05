@@ -31,9 +31,14 @@ run() {
     }
 
     /bin/tar -czf "${_tmpfile}" -C "${_vmvboxpath}" .
+    local _return_tar=$?
 
-    [ $? -ne 0 ] && {
-      __log_script_msg vbox "${__FAIL} can not run command -> /bin/tar -czf ${_tmpfile} -C ${_vmvboxpath} .\n"
+    /bin/su -l vbox -c "/usr/bin/VBoxManage startvm ${vm} --type headless" && \
+      __log_script_msg vbox "${__OK} ${vm} started sucessful\n" || \
+      __log_script_msg vbox "${__FAIL} ${vm} can not started\n"
+
+    [ ${_return_tar} -ne 0 ] && {
+      __log_script_msg vbox "${__FAIL} can not compress directory ${_vmvboxpath} - cmd(/bin/tar -czf ${_tmpfile} -C ${_vmvboxpath}) .\n"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
