@@ -92,7 +92,7 @@ main() {
 
     checking_vars || continue
 
-    [ -z ${_NOTIFICATION} ] && {
+    [ -n "${_NOTIFICATION}" ] && {
       eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME}"
     }
 
@@ -101,13 +101,16 @@ main() {
     unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
 
     [ ${_result_run} -ne ${__RETURNCODE_OK} ] && {
-      [ -z ${_NOTIFICATION} ] && {
+      [ -n "${_NOTIFICATION}" ] && {
         eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} falied!!!"
       }
 
       continue
     }
-    eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} successful!!!"
+
+    [ -n "${_NOTIFICATION}" ] && {
+      eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} successful!!!"
+    }
   done
 }
 
