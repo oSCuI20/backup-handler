@@ -30,7 +30,7 @@ run() {
       continue
     }
 
-    /bin/tar -czf ${_tmpfile} -C ${_vmvboxpath} .
+    /bin/tar -czf "${_tmpfile}" -C "${_vmvboxpath}" .
 
     [ $? -ne 0 ] && {
       __log_script_msg vbox "${__FAIL} can not run command -> /bin/tar -czf ${_tmpfile} -C ${_vmvboxpath} .\n"
