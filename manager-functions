@@ -5,6 +5,7 @@ __FAIL=Failure:
 __ERROR=Error:
 __WARN=Warning:
 __INFO=Info:
+__DEBUG=Debug:
 __NOTHING=${__INFO}
 
 ## Logging functions
@@ -14,7 +15,14 @@ __logger() {
 
   local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg[@]}"
 
-  echo -en ${logmsg}
+  ${_DEBUG} && {
+      echo -en ${logmsg}
+  }
+
+  [ "${__icon}" == "${__OK}" ] || [ "${__icon}" == "${__FAIL}" ] || \
+  [ "${__icon}" == "${__ERROR}" ] || [ "${__icon}" == "${__WARNING}" ] || \
+  [ "${__icon}" == "${__INFO}" ] && \
+    echo -en ${logmsg}
 
   [ "${__icon}" == "${__ERROR}" ] && exit 1
 
@@ -451,7 +459,7 @@ set_script_vars() {
     local _exists=$(set | /bin/grep "^${_vname%%=*}=")
 
     [ "${_exists}" == "" ] && {
-      __logger ${__INFO} "default value to var ${_vname}\n"
+      __logger ${__DEBUG} "default value to var ${_vname}\n"
 
       eval "${_vname}"
     }

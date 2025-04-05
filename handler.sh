@@ -16,6 +16,7 @@ _LOGDIR="${_ROOT}/logs"
 _LOGFILE=
 _PIDFILE=/var/run/backup-handler.locked
 _QUIET=false
+_DEBUG=false
 
 . ${_ROOT}/manager-functions
 
