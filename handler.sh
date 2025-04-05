@@ -104,9 +104,7 @@ main() {
     unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
 
     [ ${_result_run} -ne ${__RETURNCODE_OK} ] && {
-      [ -n "${_NOTIFICATION}" ] && {
-        send_notification run $0 - script->${script} in ${HOSTNAME} failed!!!
-      }
+      send_notification run $0 - script->${script} in ${HOSTNAME} failed!!!
 
       continue
     }

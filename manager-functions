@@ -476,7 +476,7 @@ unset_script_vars() {
 
   IFS=$'\n'
   for varname in $(/bin/cat ${fileconf} | /bin/sed -e '/^#/d' -e '/^$/d'); do
-    __logger ${__INFO} "unset ${varname%%=*}\n"
+    __logger ${__DEBUG} "unset ${varname%%=*}\n"
     unset ${varname%%=*}
   done
 
