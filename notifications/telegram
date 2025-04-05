@@ -1,8 +1,6 @@
-#!/bin/bash
-#
 
 
-main() {
+send_notification() {
   local message="$@"
   local curl_options=(-X GET --silent)
   local _url="${_TELEGRAM_API}/bot${_TELEGRAM_TOKEN}"
@@ -24,6 +22,3 @@ main() {
     curl ${curl_options[@]} ${_url_params} "${_url}/sendMessage"
   }
 }
-
-
-main $@
