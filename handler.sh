@@ -11,6 +11,7 @@ _CONFIG_DIR="${_ROOT}/config"
 _CONFIG_FILE="${_CONFIG_DIR}/backup.conf"
 _CONFIG_RCLONE="${_ROOT}/config/rclone.conf"
 _SCRIPTS_DIR="${_ROOT}/scripts"
+_NOTIFICATIONS_SCRIPTS_DIR="${_ROOT}/notifications"
 _LOGDIR="${_ROOT}/logs"
 _LOGFILE=
 _PIDFILE=/var/run/backup-handler.locked
@@ -43,12 +44,14 @@ __DEFAULT_KEEP_LAST_MONTHLY=0    # keep last day of the month
 __DEFAULT_KEEP_LAST_ANNUALLY=0   # keep last day of the year
 
 # default notifications
-__DEFAULT_NOTIFICATIONS_SCRIPTS=(
-  ${_ROOT}/notifications/email
-  ${_ROOT}/notifications/slack
-)
-__DEFAULT_NOTIFICATIONS_EMAIL=false
-__DEFAULT_NOTIFICATIONS_SLACK=false
+__DEFAULT_NOTIFICATION=  #email, slack, telegram
+__DEFAULT_NOTIFICATION_MESSAGE=
+
+## telegram integration
+__DEFAULT_TELEGRAM_API=https://api.telegram.org
+__DEFAULT_TELEGRAM_TOKEN=
+__DEFAULT_TELEGRAM_CHAT_ID=
+__DEFAULT_TELEGRAM_DEBUG=false
 
 # return code for functions
 __RETURNCODE_OK=0
@@ -88,9 +91,23 @@ main() {
     set_script_vars
 
     checking_vars || continue
-    run
+
+    [ -z ${_NOTIFICATION} ] && {
+      eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME}"
+    }
+
+    run; local _result_run=$?
 
     unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
+
+    [ ${_result_run} -ne ${__RETURNCODE_OK} ] && {
+      [ -z ${_NOTIFICATION} ] && {
+        eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} falied!!!"
+      }
+
+      continue
+    }
+    eval "${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}" "run $0 - script->${script} in ${HOSTNAME} successful!!!"
   done
 }
 
