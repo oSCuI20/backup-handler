@@ -23,9 +23,7 @@ run() {
     local _tmpfile=${_tmpdir}/${vm}.tar.gz
 
     /bin/su -l vbox -c "/usr/bin/VBoxManage showvminfo ${vm}" | \
-      /bin/grep -q running 2> /dev/null
-
-    [ $? -ne 0 ] && {
+      /bin/grep -q running && {
       __log_script_msg vbox "${__FAIL} the virtual machine ${vm} is running or not exists\n"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
