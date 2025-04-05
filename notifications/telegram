@@ -21,6 +21,6 @@ send_notification() {
       --data-urlencode "text=${message}"
     )
 
-    curl ${_curl_options[@]} ${_url_params[@]} "${_url}/sendMessage"
+    curl "${_curl_options[@]}" "${_url_params[@]}" "${_url}/sendMessage"
   }
 }
