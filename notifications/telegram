@@ -2,12 +2,11 @@
 
 send_notification() {
   local message="$@"
-  local curl_options=(--get --silent)
+  local _curl_options=(--get --silent)
   local _url="${_TELEGRAM_API}/bot${_TELEGRAM_TOKEN}"
 
-  ${_TELEGRAM_DEBUG} && {
-    local curl_options=(--get --verbose)
-  }
+  ${_TELEGRAM_DEBUG} && \
+    local _curl_options=(--get --verbose)
 
   [ -z ${_TELEGRAM_TOKEN} ] && \
     printf "%s\n" "TELEGRAM_TOKEN undefined"
@@ -17,8 +16,11 @@ send_notification() {
 
 
   [ -n "${_TELEGRAM_TOKEN}" ] && [ -n "${_TELEGRAM_CHAT_ID}" ] && {
-    local _url_params="--data-urlencode \"chat_id=${_TELEGRAM_CHAT_ID}\" --data-urlencode \"text=${message}\""
+    local _url_params=(
+      --data-urlencode "chat_id=${_TELEGRAM_CHAT_ID}"
+      --data-urlencode "text=${message}"
+    )
 
-    curl ${curl_options[@]} ${_url_params} "${_url}/sendMessage"
+    curl ${_curl_options[@]} ${_url_params[@]} "${_url}/sendMessage"
   }
 }
