@@ -28,6 +28,8 @@ __log_script_msg() {
   local __script_name=$1
   local __msg=$(echo $@ | sed -e "s/^${__script_name} //g")
 
+  send_notification ${__INFO} "[${__script_name}] ${__msg[@]}"
+
   ! ${_QUIET} && {
     __logger ${__INFO} "[${__script_name}] ${__msg[@]}"
   }
