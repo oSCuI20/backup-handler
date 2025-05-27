@@ -46,6 +46,7 @@ __telegram_escape_markdown() {
   text="${text//)/\\)}"
   text="${text//~/\\~}"
   text="${text//./\\.}"
+  text="${text//!/\\!}"
 
   echo "$text"
 }
