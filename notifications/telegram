@@ -2,11 +2,11 @@
 
 send_notification() {
   local message="$@"
-  local _curl_options=(--get --silent --output /dev/null)
+  local _curl_options=(-X POST --silent --output /dev/null)
   local _url="${__DEFAULT_TELEGRAM_API}/bot${__DEFAULT_TELEGRAM_TOKEN}"
 
   ${__DEFAULT_TELEGRAM_DEBUG} && \
-    local _curl_options=(--get --verbose)
+    local _curl_options=(-X POST --verbose)
 
   [ -z ${__DEFAULT_TELEGRAM_TOKEN} ] && \
     printf "%s\n" "__DEFAULT_TELEGRAM_TOKEN undefined"
@@ -14,13 +14,38 @@ send_notification() {
   [ -z ${__DEFAULT_TELEGRAM_CHAT_ID} ] && \
     printf "%s\n" "__DEFAULT_TELEGRAM_CHAT_ID undefined"
 
+  local title="*$(__telegram_escape_markdown ${__DEFAULT_NOTIFICATION_MESSAGE})*%0A%0A"
+  local text="$(__telegram_escape_markdown ${message})"
 
   [ -n "${__DEFAULT_TELEGRAM_TOKEN}" ] && [ -n "${__DEFAULT_TELEGRAM_CHAT_ID}" ] && {
     local _url_params=(
-      --data-urlencode "chat_id=${__DEFAULT_TELEGRAM_CHAT_ID}"
-      --data-urlencode "text=${__DEFAULT_NOTIFICATION_MESSAGE}\n${message}"
+      --data "parse_mode=MarkdownV2"
+      --data "chat_id=${__DEFAULT_TELEGRAM_CHAT_ID}"
+      --data "text=${title}${text}"
     )
 
     curl "${_curl_options[@]}" "${_url_params[@]}" "${_url}/sendMessage"
   }
+}
+
+__telegram_escape_markdown() {
+  local text="$@"
+  text=$(echo -en "${text}" | sed ':a;N;$!ba;s/\n/%0A/g')
+
+  text="${text//\\/\\\\}"  # Escape \
+  text="${text//_/\\_}"
+  text="${text//>/\\>}"
+  text="${text//#/\\#}"
+  text="${text//+/\\+}"
+  text="${text//-/\\-}"
+  text="${text//=/\\=}"
+  text="${text//\*/\\*}"
+  text="${text//\[/\\[}"
+  text="${text//\]/\\]}"
+  text="${text//(/\\(}"
+  text="${text//)/\\)}"
+  text="${text//~/\\~}"
+  text="${text//./\\.}"
+
+  echo "$text"
 }
