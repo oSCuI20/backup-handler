@@ -78,39 +78,40 @@ main() {
 
   load_fileconf ${_CONFIG_FILE}
 
+  msg="start at::$(date '+%Y-%m-%d %H:%M:%S')"
   for script in $(ls ${_SCRIPTS_DIR}); do
     [ ! -f "${_CONFIG_DIR}/${script}.backup.conf" ] && {
       continue
     }
 
+    msg="${msg}\nloading vars and functions for script ${script}"
+
     _LOGFILE="${_LOGDIR}/${script}.log-${_CURRENT_DATE}"
 
     . ${_CONFIG_DIR}/${script}.backup.conf   # load vars script
-
     . ${_SCRIPTS_DIR}/${script}              # load script functions, `checking_vars` and `run`
-    . ${_NOTIFICATIONS_SCRIPTS_DIR}/dummy    # load dummy send_notification function
 
     set_script_vars
 
+    msg="${msg}\nchecking variables for ${script}"
     checking_vars || continue
 
-    [ -n "${_NOTIFICATION}" ] && \
-      . ${_NOTIFICATIONS_SCRIPTS_DIR}/${_NOTIFICATION}
-
-    send_notification run $0 - script->${script} in ${HOSTNAME}
-
+    msg="${msg}\nrun script ${script}"
     run; local _result_run=$?
 
     unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
 
-    [ ${_result_run} -ne ${__RETURNCODE_OK} ] && {
-      send_notification run $0 - script->${script} in ${HOSTNAME} failed!!!
-
-      continue
-    }
-
-    send_notification run $0 - script->${script} in ${HOSTNAME} successful!!!
+    [ ${_result_run} -ne ${__RETURNCODE_OK} ] && \
+      msg="${msg}\nrun ${script} failed!" || \
+      msg="${msg}\nrun ${script} successful!"
   done
+  msg="${msg}\nend at::$(date '+%Y-%m-%d %H:%M:%S')"
+
+  . ${_NOTIFICATIONS_SCRIPTS_DIR}/dummy    # load dummy send_notification function
+  [ -n "${__DEFAULT_NOTIFICATION}" ] && \
+    . ${_NOTIFICATIONS_SCRIPTS_DIR}/${__DEFAULT_NOTIFICATION}
+
+  send_notification ${msg}
 }
 
 
