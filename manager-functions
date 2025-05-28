@@ -245,9 +245,13 @@ __rclone_copy_run() {
   }
 
   local _localdir=$(dirname ${_localfile})
+
+  [ "${_localdir:0:1}" != "/" ] && \
+    local _localdir="/${_localdir}"
+
   __rclone_run --command=copy \
                --extra="${_rclone_options[@]}" \
-               --args="${_localfile} ${_s3path}/main/${_localdir}"
+               --args="${_localfile} ${_s3path}/main${_localdir}"
 
   local retval=$?
   [ ${retval} -ne 0 ] && {
