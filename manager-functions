@@ -50,13 +50,9 @@ __locked() {
   [ ! -d "${_PIDFILE%/*}" ] && /bin/mkdir -p "${_PIDFILE%/*}"
   [ ! -f "${_PIDFILE}" ] && /bin/touch "${_PIDFILE}"
   local pid=$(/bin/cat "${_PIDFILE}")
-  local process=$(/bin/ps ax -o pid,comm)
-  local retval=0
 
-  if /usr/bin/printf "${process}" | /bin/grep -q "${pid} " && \
-     [ -n "${pid}" ]; then
+  [ -n "${pid}" ] && /bin/ps -p "${pid}" > /dev/null 2&>1 && \
     __logger ${__ERROR} "There is a process in progress, ${pid}\n"
-  fi
 
   /bin/echo $$ > "${_PIDFILE}"
 }
