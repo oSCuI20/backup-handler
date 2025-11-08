@@ -94,17 +94,39 @@ main() {
     set_script_vars
 
     msg="${msg}\nchecking variables for ${script}"
-    checking_vars || continue
+    checking_vars; local _result_checking_vars=$?
+    [ ${_result_checking_vars} -ne ${__RETURNCODE_OK} ] && {
+      [ ${_result_run} -eq ${__RETURNCODE_SCRIPT_ERROR_ANY} ] && \
+        msg="${msg}\nthe script ${script} has any error, check log, failed!"
 
-    msg="${msg}\nrun script ${script}"
-    run; local _result_run=$?
+      [ ${_result_run} -eq ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED} ] && \
+        msg="${msg}\nscript ${script}, vars undefined"
+
+      [ ${_result_run} -eq ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT} ] && \
+        msg="${msg}\nbackup mode not support"
+    }
+
+    [ ${_result_checking_vars} -ne ${__RETURNCODE_OK} ] && {
+      msg="${msg}\nrun script ${script}"
+      run; local _result_run=$?
+
+      [ ${_result_run} -eq ${__RETURNCODE_OK} ] && \
+        msg="${msg}\nrun ${script} successful!"
+
+      [ ${_result_run} -ne ${__RETURNCODE_OK} ] && {
+        [ ${_result_run} -eq ${__RETURNCODE_SCRIPT_NOTHING} ] && \
+          msg="${msg}\nskipping backup files for ${_HOSTNAME}"
+
+        [ ${_result_run} -eq ${__RETURNCODE_SCRIPT_ERROR_ANY} ] && \
+          msg="${msg}\nthe script ${script} has any error, check log, failed!"
+
+        msg="${msg}\nrun ${script} failed!"
+      }
+    }
 
     unset_script_vars "${_CONFIG_DIR}/${script}.backup.conf"
-
-    [ ${_result_run} -ne ${__RETURNCODE_OK} ] && \
-      msg="${msg}\nrun ${script} failed!" || \
-      msg="${msg}\nrun ${script} successful!"
   done
+
   msg="${msg}\nend at::$(date '+%Y-%m-%d %H:%M:%S')"
 
   . ${_NOTIFICATIONS_SCRIPTS_DIR}/dummy    # load dummy send_notification function
