@@ -240,7 +240,7 @@ __rclone_copy_run() {
   __logger ${__INFO} "file ${_localfile} to ${_s3path}\n"
 
   local _rclone_options=
-  [ ${_keep_last_increment} -gt 0 ] && {
+  [ ${_keep_last_increment:-0} -gt 0 ] && {
     local _rclone_options=("--backup-dir=${_s3path}${__s3_increment}/${_CURRENT_DATE}")
   }
 
