@@ -25,15 +25,15 @@ __logger() {
 
   local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg}\n"
 
-  ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
-      echo -en ${logmsg}
-  }
-
-  ! ${_QUIET} && ! ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
+  ${_DEBUG:-false} && {
     echo -en ${logmsg}
   }
 
-  ${_LOGGING} && ! ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
+  ! ${_QUIET} && [ "${__icon}" != "${__DEBUG}" ] && {
+    echo -en ${logmsg}
+  }
+
+  ${_LOGGING} && [ "${__icon}" != "${__DEBUG}" ] && {
     echo -en ${logmsg} >> ${_LOGFILE}
   }
 
