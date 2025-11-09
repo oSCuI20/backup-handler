@@ -23,7 +23,7 @@ __logger() {
     shift
   done
 
-  local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg[@]}"
+  local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg}\n"
 
   ${_DEBUG} && [ "${__icon}" == "${__DEBUG}" ] && {
       echo -en ${logmsg}

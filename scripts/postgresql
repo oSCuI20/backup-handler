@@ -6,12 +6,12 @@
 
 run() {
   ! __run_script && {
-    __log_script_msg --script-name="pgsql" --icon=${__INFO} --msg="skipping PostgreSQL backups for ${_HOSTNAME}\n"
+    __log_script_msg --script-name="pgsql" --icon="${__INFO}" --msg="skipping PostgreSQL backups for ${_HOSTNAME}"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-  __log_script_msg --script-name="pgsql" --icon=${__INFO} --msg="PostgreSQL backups is starting for ${_HOSTNAME}\n"
+  __log_script_msg --script-name="pgsql" --icon="${__INFO}" --msg="PostgreSQL backups is starting for ${_HOSTNAME}"
 
   local __directory="${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/postgresql/${__NOW_DATE}"
 
@@ -36,7 +36,7 @@ run() {
     local _databases=$(/usr/bin/psql -t -U postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;")
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="backups for databases: ${_databases[@]}\n"
+      __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="backups for databases: ${_databases[@]}"
 
       return ${__RETURNCODE_SCRIPT_ERROR_ANY}
     }
@@ -46,7 +46,7 @@ run() {
     local _databases=(${_databases[@]/${ignore}/})
   done
 
-  __log_script_msg --script-name="pgsql" --icon=${__INFO} --msg="running backup of databases: ${_databases[@]}\n"
+  __log_script_msg --script-name="pgsql" --icon="${__INFO}" --msg="running backup of databases: ${_databases[@]}"
 
   local ret=${__RETURNCODE_OK}
   for database in ${_databases[@]}; do
@@ -54,7 +54,7 @@ run() {
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="backup of database: ${database}\n"
+      __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="backup of database: ${database}"
 
       ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
@@ -69,16 +69,16 @@ run() {
       --keep-annually=${_KEEP_LAST_ANNUALLY} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="uploading database: ${database}\n"
+      __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="uploading database: ${database}"
 
       ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 
-    __log_script_msg --script-name="pgsql" --icon=${__INFO} --msg="$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)\n"
+    __log_script_msg --script-name="pgsql" --icon="${__INFO}" --msg="$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)"
   done
 
-__log_script_msg --script-name="pgsql" --icon=${__INFO} --msg="end PostgreSQL backups\n"
+__log_script_msg --script-name="pgsql" --icon="${__INFO}" --msg="end PostgreSQL backups"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
@@ -95,25 +95,25 @@ __log_script_msg --script-name="pgsql" --icon=${__INFO} --msg="end PostgreSQL ba
 
 checking_vars() {
   [ ! -f /usr/bin/psql ]  && {
-    __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="/usr/bin/psql command not found\n"
+    __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="/usr/bin/psql command not found"
 
     return ${__RETURNCODE_SCRIPT_ERROR_ANY}
   }
 
   [ ! -f /usr/bin/pg_dump ]  && {
-    __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="/usr/bin/pg_dump command not found\n"
+    __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="/usr/bin/pg_dump command not found"
 
     return ${__RETURNCODE_SCRIPT_ERROR_ANY}
   }
 
   [ -z "${POSTGRESQL_USER}" ] && {
-    __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="POSTGRESQL_USER is undefined\n"
+    __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="POSTGRESQL_USER is undefined"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ -z "${POSTGRESQL_PASS}" ] && {
-    __log_script_msg --script-name="pgsql" --icon=${__FAIL} --msg="POSTGRESQL_PASS is undefined\n"
+    __log_script_msg --script-name="pgsql" --icon="${__FAIL}" --msg="POSTGRESQL_PASS is undefined"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
@@ -121,19 +121,19 @@ checking_vars() {
   [ -z "${POSTGRESQL_HOST}" ] && {
     POSTGRESQL_HOST=localhost
 
-    __log_script_msg --script-name="pgsql" --icon=${__WARN} --msg="POSTGRESQL_HOST is undefined, default ${POSTGRESQL_HOST}\n"
+    __log_script_msg --script-name="pgsql" --icon="${__WARN}" --msg="POSTGRESQL_HOST is undefined, default ${POSTGRESQL_HOST}"
   }
 
   [ -z "${POSTGRESQL_PORT}" ] && {
     POSTGRESQL_PORT=3306
 
-    __log_script_msg --script-name="pgsql" --icon=${__WARN} --msg="POSTGRESQL_PORT is undefined, default ${POSTGRESQL_PORT}\n"
+    __log_script_msg --script-name="pgsql" --icon="${__WARN}" --msg="POSTGRESQL_PORT is undefined, default ${POSTGRESQL_PORT}"
   }
 
   [ -z "${POSTGRESQL_DATABASES_IGNORE[@]}" ] && {
     POSTGRESQL_DATABASES_IGNORE=(postgres template0 template1)
 
-    __log_script_msg --script-name="pgsql" --icon=${__WARN} --msg="POSTGRESQL_DATABASES_IGNORE is undefined, ignore default database: ${POSTGRESQL_DATABASES_IGNORE[@]}\n"
+    __log_script_msg --script-name="pgsql" --icon="${__WARN}" --msg="POSTGRESQL_DATABASES_IGNORE is undefined, ignore default database: ${POSTGRESQL_DATABASES_IGNORE[@]}"
   }
 
   return ${__RETURNCODE_OK}

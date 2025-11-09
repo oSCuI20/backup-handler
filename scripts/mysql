@@ -6,12 +6,12 @@
 
 run() {
   ! __run_script && {
-    __log_script_msg --script-name="mysql" --icon=${__INFO} --msg="skipping MySQL backups for ${_HOSTNAME}\n"
+    __log_script_msg --script-name="mysql" --icon="${__INFO}" --msg="skipping MySQL backups for ${_HOSTNAME}"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-  __log_script_msg --script-name="mysql" --icon=${__INFO} --msg="MySQL backups is starting for ${_HOSTNAME}\n"
+  __log_script_msg --script-name="mysql" --icon="${__INFO}" --msg="MySQL backups is starting for ${_HOSTNAME}"
 
   local __directory="${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/mysql"
 
@@ -39,7 +39,7 @@ run() {
     local _databases=$(/usr/bin/mysql -N ${_mysql_options[@]} -e "SHOW DATABASES;")
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="backups for databases: ${_databases[@]}\n"
+      __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="backups for databases: ${_databases[@]}"
 
       return ${__RETURNCODE_SCRIPT_ERROR_ANY}
     }
@@ -51,7 +51,7 @@ run() {
     local _databases=(${_databases[@]/${ignore}/})
   done
 
-  __log_script_msg --script-name="mysql" --icon=${__INFO} --msg="running backup of databases: ${_databases[@]}\n"
+  __log_script_msg --script-name="mysql" --icon="${__INFO}" --msg="running backup of databases: ${_databases[@]}"
 
   local ret=${__RETURNCODE_OK}
 
@@ -60,7 +60,7 @@ run() {
       /bin/gzip ${_gzip_options[@]} > ${_tmpdir}/${database}.sql.gz
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="backup of database: ${database}\n"
+      __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="backup of database: ${database}"
 
       ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
@@ -75,16 +75,16 @@ run() {
       --keep-annually=${_KEEP_LAST_ANNUALLY} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="uploading database: ${database}\n"
+      __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="uploading database: ${database}"
 
       ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 
-    __log_script_msg --script-name="mysql" --icon=${__INFO} --msg="$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)\n"
+    __log_script_msg --script-name="mysql" --icon="${__INFO}" --msg="$(/bin/rm -fv ${_tmpdir}/${database}.sql.gz)"
   done
 
-  __log_script_msg --script-name="mysql" --icon=${__INFO} --msg="end MySQL backups\n"
+  __log_script_msg --script-name="mysql" --icon="${__INFO}" --msg="end MySQL backups"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
@@ -101,33 +101,33 @@ run() {
 
 checking_vars() {
   [ ! -f /usr/bin/mysql ]  && {
-    __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="/usr/bin/mysql command not found\n"
+    __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="/usr/bin/mysql command not found"
 
     return ${__RETURNCODE_SCRIPT_ERROR_ANY}
   }
 
   [ -n "${_BACKUP_MODE}" ] && {
     [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_COMPLETE}" ] && {
-      __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
+      __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_COMPLETE}"
 
       return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
     }
   }
 
   [ ! -f /usr/bin/mysqldump ]  && {
-    __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="/usr/bin/mysqldump command not found\n"
+    __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="/usr/bin/mysqldump command not found"
 
     return ${__RETURNCODE_SCRIPT_ERROR_ANY}
   }
 
   [ -z "${MYSQL_USER}" ] && {
-    __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="MYSQL_USER is undefined\n"
+    __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="MYSQL_USER is undefined"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ -z "${MYSQL_PASS}" ] && {
-    __log_script_msg --script-name="mysql" --icon=${__FAIL} --msg="MYSQL_PASS is undefined\n"
+    __log_script_msg --script-name="mysql" --icon="${__FAIL}" --msg="MYSQL_PASS is undefined"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
@@ -135,19 +135,19 @@ checking_vars() {
   [ -z "${MYSQL_HOST}" ] && {
     MYSQL_HOST=localhost
 
-    __log_script_msg --script-name="mysql" --icon=${__WARN} --msg="MYSQL_HOST is undefined, default ${MYSQL_HOST}\n"
+    __log_script_msg --script-name="mysql" --icon="${__WARN}" --msg="MYSQL_HOST is undefined, default ${MYSQL_HOST}"
   }
 
   [ -z "${MYSQL_PORT}" ] && {
     MYSQL_PORT=3306
 
-    __log_script_msg --script-name="mysql" --icon=${__WARN} --msg="MYSQL_PORT is undefined, default ${MYSQL_PORT}\n"
+    __log_script_msg --script-name="mysql" --icon="${__WARN}" --msg="MYSQL_PORT is undefined, default ${MYSQL_PORT}"
   }
 
   [ -z "${MYSQL_DATABASES_IGNORE[@]}" ] && {
     MYSQL_DATABASES_IGNORE=(information_schema performance_schema mysql)
 
-    __log_script_msg --script-name="mysql" --icon=${__WARN} --msg="MYSQL_DATABASES_IGNORE is undefined, ignore default databases: ${MYSQL_DATABASES_IGNORE[@]}\n"
+    __log_script_msg --script-name="mysql" --icon="${__WARN}" --msg="MYSQL_DATABASES_IGNORE is undefined, ignore default databases: ${MYSQL_DATABASES_IGNORE[@]}"
   }
 
   return ${__RETURNCODE_OK}

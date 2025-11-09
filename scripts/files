@@ -8,7 +8,7 @@
 
 run() {
   ! __run_script && {
-    __log_script_msg --script-name="files" --icon=${__INFO} --msg="skipping backup files for ${_HOSTNAME}\n"
+    __log_script_msg --script-name="files" --icon="${__INFO}" --msg="skipping backup files for ${_HOSTNAME}"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
@@ -16,7 +16,7 @@ run() {
   local __file=${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/files
   local ret=${__RETURNCODE_OK}
 
-  __log_script_msg --script-name="files" --icon=${__INFO} --msg="synchronization is starting for ${_HOSTNAME}\n"
+  __log_script_msg --script-name="files" --icon="${__INFO}" --msg="synchronization is starting for ${_HOSTNAME}"
 
   for file in ${_BACKUP_FILES[@]}; do
     __rclone_copy_run \
@@ -25,16 +25,16 @@ run() {
       --keep-increment=${_KEEP_LAST_INCREMENT} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
-      __log_script_msg --script-name="files" --icon=${__FAIL} --msg="synchronization ${file}\n"
+      __log_script_msg --script-name="files" --icon="${__FAIL}" --msg="synchronization ${file}"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 
-    __log_script_msg --script-name="files" --icon=${__INFO} --msg="synchronization ${file} completed\n"
+    __log_script_msg --script-name="files" --icon="${__INFO}" --msg="synchronization ${file} completed"
   done
 
-  __log_script_msg --script-name="files" --icon=${__INFO} --msg="end synchronization files\n"
+  __log_script_msg --script-name="files" --icon="${__INFO}" --msg="end synchronization files"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
@@ -48,13 +48,13 @@ run() {
 
 checking_vars() {
   [ -z "${_BACKUP_FILES}" ] && {
-    __log_script_msg --script-name="files" --icon=${__FAIL} --msg="_BACKUP_FILES is undefined. Cannot run the script\n"
+    __log_script_msg --script-name="files" --icon="${__FAIL}" --msg="_BACKUP_FILES is undefined. Cannot run the script"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_INCREMENT}" ] && {
-    __log_script_msg --script-name="files" --icon=${__FAIL} --msg="Backup mode not supported. You must use _BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
+    __log_script_msg --script-name="files" --icon="${__FAIL}" --msg="Backup mode not supported. You must use _BACKUP_MODE=${__BACKUP_MODE_INCREMENT}"
 
     return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
   }
