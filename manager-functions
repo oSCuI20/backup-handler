@@ -33,7 +33,7 @@ __logger() {
     echo -en ${logmsg}
   }
 
-  ${_LOGGING} && {
+  ${_LOGGING} && ! ${_DEBUG:-false} && {
     echo -en ${logmsg} >> ${_LOGFILE}
   }
 
