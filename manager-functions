@@ -73,7 +73,7 @@ __locked() {
   local pid=$(/bin/cat "${_PIDFILE}")
 
   [ -n "${pid}" ] && /bin/ps -p "${pid}" > /dev/null && \
-    __logger --icon=${__ERROR} --msg="There is a process in progress, ${pid}\n"
+    __logger --icon=${__ERROR} --msg="There is a process in progress, ${pid}"
 
   /bin/echo $$ > "${_PIDFILE}"
 }
@@ -153,7 +153,7 @@ __rclone_sync_run() {
   done
 
   [ ! -d "${_localdir}" ] && {
-    __logger --icon=${__FAIL} --msg="directory not found ${_localdir}\n"
+    __logger --icon=${__FAIL} --msg="directory not found ${_localdir}"
 
     return ${__RETURNCODE_SCRIPT_RCLONE_LOCALDIRECTORY_NOTFOUND}
   }
@@ -188,12 +188,12 @@ __rclone_copy_run() {
   done
 
   [ ! -f "${_localfile}" ] && {
-    __logger --icon=${__FAIL} --msg="localfile not found in path ${_localfile}\n"
+    __logger --icon=${__FAIL} --msg="localfile not found in path ${_localfile}"
 
     return ${__RETURNCODE_SCRIPT_RCLONE_LOCALFILE_NOTFOUND}
   }
 
-  __logger --icon=${__INFO} --msg="file ${_localfile} to ${_s3path}\n"
+  __logger --icon=${__INFO} --msg="file ${_localfile} to ${_s3path}"
 
   local _rclone_options=
   [ ${_keep_last_increment:-0} -gt 0 ] && {
@@ -211,7 +211,7 @@ __rclone_copy_run() {
 
   local retval=$?
   [ ${retval} -ne 0 ] && {
-    __logger --icon=${__FAIL} --msg="can not copy ${_localfile} to ${_s3path}\n"
+    __logger --icon=${__FAIL} --msg="can not copy ${_localfile} to ${_s3path}"
   }
 
   return ${retval}
@@ -303,10 +303,10 @@ __keep_last_backups() {
     shift
   done
 
-  __logger --icon=${__INFO} --msg="backup mode ${_mode}\n"
+  __logger --icon=${__INFO} --msg="backup mode ${_mode}"
 
   [ "${_mode}" == "${__BACKUP_MODE_INCREMENT}" ] && {
-    __logger --icon=${__INFO} --msg="path: ${_s3path}${__s3_increment} - keep last ${_keep_last_increment:-unlimit} backups\n"
+    __logger --icon=${__INFO} --msg="path: ${_s3path}${__s3_increment} - keep last ${_keep_last_increment:-unlimit} backups"
 
     __keep ${_s3path}${__s3_increment} ${_keep_last_increment}
   }
@@ -318,27 +318,27 @@ __keep_last_backups() {
     local _run_daily=${_keep_last_daily:-0}
 
     [ "${_run_annually}" == "001" ] && {
-      __logger --icon=${__INFO} --msg="annually: path: ${_s3path}${__s3_complete_annually} - keep last ${_keep_last_annually:-unlimit} backups\n"
+      __logger --icon=${__INFO} --msg="annually: path: ${_s3path}${__s3_complete_annually} - keep last ${_keep_last_annually:-unlimit} backups"
 
       [ ${_keep_last_annually:-0} -gt 0 ] && \
         __keep ${_s3path}${__s3_complete_annually} ${_keep_last_annually}
     }
 
     [ "${_run_monthly}" == "01" ] && {
-      __logger --icon=${__INFO} --msg="monthly: path: ${_s3path}${__s3_complete_monthly} - keep last ${_keep_last_monthly:-unlimit} backups\n"
+      __logger --icon=${__INFO} --msg="monthly: path: ${_s3path}${__s3_complete_monthly} - keep last ${_keep_last_monthly:-unlimit} backups"
 
       [ ${_keep_last_monthly:-0} -gt 0 ] && \
         __keep ${_s3path}${__s3_complete_monthly} ${_keep_last_monthly}
     }
 
     [ "${_run_weekly}" == "1" ] && {
-      __logger --icon=${__INFO} --msg="weekly: path: ${_s3path}${__s3_complete_weekly} - keep last ${_keep_last_weekly:-unlimit} backups\n"
+      __logger --icon=${__INFO} --msg="weekly: path: ${_s3path}${__s3_complete_weekly} - keep last ${_keep_last_weekly:-unlimit} backups"
 
       [ ${_keep_last_weekly:-0} -gt 0 ] && \
         __keep ${_s3path}${__s3_complete_weekly} ${_keep_last_weekly}
     }
 
-    __logger --icon=${__INFO} --msg="daily: path: ${_s3path}${__s3_complete_daily} - keep last ${_keep_last_daily:-unlimit} backups\n"
+    __logger --icon=${__INFO} --msg="daily: path: ${_s3path}${__s3_complete_daily} - keep last ${_keep_last_daily:-unlimit} backups"
 
     [ ${_run_daily} -gt 0 ] && {
       __keep ${_s3path}${__s3_complete_daily} ${_keep_last_daily}
@@ -353,23 +353,23 @@ __keep() {
   local _remote_dir=$1
   local _keep_last=$2
 
-  __logger --icon=${__INFO} --msg="keep last ${_keep_last} backups, path: ${_remote_dir}\n"
+  __logger --icon=${__INFO} --msg="keep last ${_keep_last} backups, path: ${_remote_dir}"
 
   local _retention=($(/usr/bin/rclone --config=${_CONFIG_RCLONE} lsd ${_remote_dir} | \
                       /usr/bin/awk '{print $5}' | \
                       /usr/bin/sort))
 
-  __logger --icon=${__INFO} --msg="retentions ${#_retention[@]} of ${_keep_last:-unlimit}\n"
+  __logger --icon=${__INFO} --msg="retentions ${#_retention[@]} of ${_keep_last:-unlimit}"
 
   while [ ${#_retention[@]} -gt ${_keep_last:-0} ]; do
     local __remove_filename=${_remote_dir}/${_retention[0]}
 
-    __logger --icon=${__INFO} --msg="trying remove directory ${__remove_filename}\n"
+    __logger --icon=${__INFO} --msg="trying remove directory ${__remove_filename}"
 
     __rclone_run --command=delete --args=${__remove_filename}
 
     [ $? -ne 0 ] && {
-      __logger --icon=${__FAIL} --msg="can not remove ${__remove_filename}\n"
+      __logger --icon=${__FAIL} --msg="can not remove ${__remove_filename}"
     }
 
     local _retention=(${_retention[@]:1:${#_retention[@]}})  # remove first element
@@ -417,7 +417,7 @@ set_script_vars() {
     local _exists=$(set | /bin/grep "^${_vname%%=*}=")
 
     [ "${_exists}" == "" ] && {
-      __logger --icon=${__DEBUG} --msg="default value to var ${_vname}\n"
+      __logger --icon=${__DEBUG} --msg="default value to var ${_vname}"
 
       eval "${_vname}"
     }
@@ -434,7 +434,7 @@ unset_script_vars() {
 
   IFS=$'\n'
   for varname in $(/bin/cat ${fileconf} | /bin/sed -e '/^#/d' -e '/^$/d'); do
-    __logger --icon=${__DEBUG} --msg="unset ${varname%%=*}\n"
+    __logger --icon=${__DEBUG} --msg="unset ${varname%%=*}"
     unset ${varname%%=*}
   done
 
