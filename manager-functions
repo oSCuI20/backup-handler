@@ -51,7 +51,7 @@ __locked() {
   [ ! -f "${_PIDFILE}" ] && /bin/touch "${_PIDFILE}"
   local pid=$(/bin/cat "${_PIDFILE}")
 
-  [ -n "${pid}" ] && /bin/ps -p "${pid}" > /dev/null 2&>1 && \
+  [ -n "${pid}" ] && /bin/ps -p "${pid}" > /dev/null && \
     __logger ${__ERROR} "There is a process in progress, ${pid}\n"
 
   /bin/echo $$ > "${_PIDFILE}"
