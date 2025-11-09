@@ -27,15 +27,13 @@ __logger() {
 
   ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
       echo -en ${logmsg}
-
-      return 0
   }
 
-  ! ${_QUIET} && {
+  ! ${_QUIET} && ! ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
     echo -en ${logmsg}
   }
 
-  ${_LOGGING} && {
+  ${_LOGGING} && ! ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
     echo -en ${logmsg} >> ${_LOGFILE}
   }
 
