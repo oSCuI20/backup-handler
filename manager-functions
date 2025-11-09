@@ -23,9 +23,6 @@ __logger() {
     shift
   done
 
-  local __icon=$1
-  local __msg=(${@/${__icon}/})
-
   local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg[@]}"
 
   ${_DEBUG} && [ "${__icon}" == "${__DEBUG}" ] && {
