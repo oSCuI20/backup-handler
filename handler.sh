@@ -139,13 +139,13 @@ main() {
 
 load_fileconf() {
   [ ! -f "${1}" ] && {
-    __logger ${__ERROR} "Not found configuration file, ${1}\n"
+    __logger --icon=${__ERROR} --msg="Not found configuration file, ${1}\n"
   }
 
   . $1
 
   [ -z "${__DEFAULT_RCLONE_REMOTE_BACKUP}" ] && {
-    __logger ${__ERROR} "__DEFAULT_RCLONE_REMOTE_BACKUP not define\n"
+    __logger --icon=${__ERROR} --msg="__DEFAULT_RCLONE_REMOTE_BACKUP undefined\n"
   }
 }  #load_fileconf
 
@@ -207,7 +207,7 @@ parse_arguments() {
         exit 0
         ;;
       *)
-        __logger ${__ERROR} Not recognized option ${key}
+        __logger --icon=${__ERROR} --msg="Not recognized option ${key}"
         print_usage
         print_help
         exit 1
@@ -217,21 +217,21 @@ parse_arguments() {
   done
 
   [ ! -f ${_CONFIG_FILE} ] && {
-    __logger ${__ERROR} "Not found ${_CONFIG_FILE}\n"
+    __logger --icon=${__ERROR} --msg="Not found ${_CONFIG_FILE}\n"
   }
 
   [ ! -f ${_CONFIG_RCLONE} ] && {
-    __logger ${__ERROR} "Not found ${_CONFIG_RCLONE}\n"
+    __logger --icon=${__ERROR} --msg="Not found ${_CONFIG_RCLONE}\n"
   }
 
   [ ! -d ${_SCRIPTS_DIR} ] && {
-    __logger ${__ERROR} "Not found ${_SCRIPTS_DIR} directory\n"
+    __logger --icon=${__ERROR} --msg="Not found ${_SCRIPTS_DIR} directory\n"
   }
 
   [ ! -d ${_LOGDIR} ] && {
     mkdir -p "${_LOGDIR}"
 
-    __logger ${__WARN} "Not found ${_LOGDIR}, creating logs directory\n"
+    __logger --icon=${__WARN} --msg="Not found ${_LOGDIR}, creating logs directory\n"
   }
 
 }  #parse_arguments

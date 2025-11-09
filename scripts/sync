@@ -6,7 +6,7 @@
 
 run() {
   ! __run_script && {
-    __log_script_msg sync "skipping synchronization for ${_HOSTNAME}\n"
+    __log_script_msg --script-name="sync" --icon=${__INFO} --msg="skipping backup files for for ${_HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
@@ -14,7 +14,7 @@ run() {
   local __directory=${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/sync
   local ret=${__RETURNCODE_OK}
 
-  __log_script_msg sync "starting synchronization for ${_HOSTNAME}\n"
+  __log_script_msg --script-name="sync" --icon=${__INFO} --msg="synchronization is starting for ${_HOSTNAME}\n"
 
   for directory in ${_BACKUP_DIRECTORIES[@]}; do
     __rclone_sync_run \
@@ -23,16 +23,16 @@ run() {
       --keep-increment=${_KEEP_LAST_INCREMENT} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
-      __log_script_msg sync "${__FAIL} synchronization ${directory} failure\n"
+      __log_script_msg --script-name="sync" --icon=${__FAIL} --msg="synchronization ${directory}\n"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 
-    __log_script_msg sync "synchronization ${directory} completed\n"
+    __log_script_msg --script-name="sync" --icon=${__INFO} --msg="synchronization ${directory} completed\n"
   done
 
-  __log_script_msg sync "finish synchronization for ${_HOSTNAME}\n"
+  __log_script_msg --script-name="sync" --icon=${__INFO} --msg="end synchronization files\n"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
@@ -46,13 +46,13 @@ run() {
 
 checking_vars() {
   [ -z "${_BACKUP_DIRECTORIES}" ] && {
-    __log_script_msg sync "${__FAIL} _BACKUP_DIRECTORIES not defined, cannot run the script\n"
+    __log_script_msg --script-name="sync" --icon=${__FAIL} --msg="_BACKUP_DIRECTORIES not defined, cannot run the script\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_INCREMENT}" ] && {
-    __log_script_msg sync "${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
+    __log_script_msg --script-name="sync" --icon=${__FAIL} --msg="backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_INCREMENT}\n"
 
     return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
   }

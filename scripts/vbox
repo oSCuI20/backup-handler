@@ -6,12 +6,12 @@
 
 run() {
   ! __run_script && {
-    __log_script_msg vbox "skipping synchronization for ${_HOSTNAME}\n"
+    __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="skipping virtualbox backups for ${_HOSTNAME}\n"
 
     return ${__RETURNCODE_SCRIPT_NOTHING}
   }
 
-  __log_script_msg vbox "starting synchronization for ${_HOSTNAME}\n"
+  __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="synchronization is starting for ${_HOSTNAME}\n"
 
   local __directory=${_RCLONE_REMOTE_BACKUP}/${_HOSTNAME}/virtualbox
   local _tmpdir=${_TMPDIR}
@@ -24,7 +24,7 @@ run() {
 
     /bin/su -l vbox -c "/usr/bin/VBoxManage showvminfo ${vm}" | \
       /bin/grep -q running && {
-      __log_script_msg vbox "${__FAIL} the virtual machine ${vm} is running or not exists\n"
+      __log_script_msg --script-name="vbox" --icon=${__FAIL} --msg="the virtual machine ${vm} is running or not exists\n"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
@@ -34,11 +34,11 @@ run() {
     local _return_tar=$?
 
     /bin/su -l vbox -c "/usr/bin/VBoxManage startvm ${vm} --type headless" && \
-      __log_script_msg vbox "${__OK} ${vm} started sucessful\n" || \
-      __log_script_msg vbox "${__FAIL} ${vm} can not started\n"
+      __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="${__OK} ${vm} started sucessful\n" || \
+      __log_script_msg --script-name="vbox" --icon=${__FAIL} --msg="${vm} can not started\n"
 
     [ ${_return_tar} -ne 0 ] && {
-      __log_script_msg vbox "${__FAIL} can not compress directory ${_vmvboxpath} - cmd(/bin/tar -czf ${_tmpfile} -C ${_vmvboxpath}) .\n"
+      __log_script_msg --script-name="vbox" --icon=${__FAIL} --msg="cannot compress directory ${_vmvboxpath} - cmd(/bin/tar -czf ${_tmpfile} -C ${_vmvboxpath}) .\n"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
@@ -53,16 +53,16 @@ run() {
       --keep-annually=${_KEEP_LAST_ANNUALLY} &>> ${_LOGFILE}
 
     [ $? -ne 0 ] && {
-      __log_script_msg vbox "${__FAIL} virtualbox ${vm} backup failed!\n"
+      __log_script_msg --script-name="vbox" --icon=${__FAIL} --msg="${vm} backup failed!\n"
 
       local ret=${__RETURNCODE_SCRIPT_ERROR_ANY}
       continue
     }
 
-    __log_script_msg vbox "$(/bin/rm -fv ${_tmpfile})\n"
+    __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="$(/bin/rm -fv ${_tmpfile})\n"
   done
 
-  __log_script_msg vbox "virtualbox vm backpus finish!\n"
+  __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="end PostgreSQL backups\n"
 
   [ ${ret} -eq ${__RETURNCODE_OK} ] && {
     __keep_last_backups --mode=${_BACKUP_MODE} \
@@ -79,19 +79,19 @@ run() {
 
 checking_vars() {
   [ "${_BACKUP_MODE}" != "${__BACKUP_MODE_COMPLETE}" ] && {
-    __log_script_msg vbox "${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
+    __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="${__FAIL} backup mode not support, support _BACKUP_MODE=${__BACKUP_MODE_COMPLETE}\n"
 
     return ${__RETURNCODE_SCRIPT_BACKUP_MODE_NOT_SUPPORT}
   }
 
   [ -z "${VBOX_VMS}" ] && {
-    __log_script_msg vbox "${__FAIL} VBOX_VMS not defined\n"
+    __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="${__FAIL} VBOX_VMS not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
 
   [ -z "${VBOX_PATH}" ] && {
-    __log_script_msg vbox "${__FAIL} VBOX_PATH not defined\n"
+    __log_script_msg --script-name="vbox" --icon=${__INFO} --msg="${__FAIL} VBOX_PATH not defined\n"
 
     return ${__RETURNCODE_SCRIPT_VARS_NOT_DEFINED}
   }
