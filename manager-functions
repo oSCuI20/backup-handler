@@ -153,7 +153,7 @@ __rclone_sync_run() {
   done
 
   [ ! -d "${_localdir}" ] && {
-    __logger --icon=${__FAIL} --msg="directory not found ${_localdir}"
+    __logger --icon="${__FAIL}" --msg="directory not found ${_localdir}"
 
     return ${__RETURNCODE_SCRIPT_RCLONE_LOCALDIRECTORY_NOTFOUND}
   }
@@ -188,7 +188,7 @@ __rclone_copy_run() {
   done
 
   [ ! -f "${_localfile}" ] && {
-    __logger --icon=${__FAIL} --msg="localfile not found in path ${_localfile}"
+    __logger --icon="${__FAIL}" --msg="localfile not found in path ${_localfile}"
 
     return ${__RETURNCODE_SCRIPT_RCLONE_LOCALFILE_NOTFOUND}
   }
@@ -211,7 +211,7 @@ __rclone_copy_run() {
 
   local retval=$?
   [ ${retval} -ne 0 ] && {
-    __logger --icon=${__FAIL} --msg="can not copy ${_localfile} to ${_s3path}"
+    __logger --icon="${__FAIL}" --msg="can not copy ${_localfile} to ${_s3path}"
   }
 
   return ${retval}
@@ -369,7 +369,7 @@ __keep() {
     __rclone_run --command=delete --args=${__remove_filename}
 
     [ $? -ne 0 ] && \
-      __logger --icon=${__FAIL} --msg="can not remove ${__remove_filename}" || \
+      __logger --icon="${__FAIL}" --msg="can not remove ${__remove_filename}" || \
       __logger --icon="${__INFO}" --msg="remove directory ${__remove_filename}"
 
     local _retention=(${_retention[@]:1:${#_retention[@]}})  # remove first element
