@@ -106,7 +106,7 @@ main() {
         msg="${msg}\nbackup mode not support"
     }
 
-    [ ${_result_checking_vars} -ne ${__RETURNCODE_OK} ] && {
+    [ ${_result_checking_vars} -eq ${__RETURNCODE_OK} ] && {
       msg="${msg}\nrun script ${script}"
       run; local _result_run=$?
 
