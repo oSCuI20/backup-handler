@@ -25,11 +25,11 @@ __logger() {
 
   local logmsg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] ${__icon} ${__msg}\n"
 
-  ${_DEBUG} && [ "${__icon}" == "${__DEBUG}" ] && {
+  ${_DEBUG:-false} && [ "${__icon}" == "${__DEBUG}" ] && {
       echo -en ${logmsg}
   }
 
-  ! ${_QUIET} && ! ${_DEBUG} && {
+  ! ${_QUIET} && ! ${_DEBUG:-false} && {
     echo -en ${logmsg}
   }
 
