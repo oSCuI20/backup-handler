@@ -6,7 +6,7 @@ send_notification() {
   local _url="${__DEFAULT_TELEGRAM_API}/bot${__DEFAULT_TELEGRAM_TOKEN}"
 
   ${__DEFAULT_TELEGRAM_DEBUG} && \
-    local _curl_options=(-X POST)
+    local _curl_options=(-X POST --quiet)
 
   [ -z ${__DEFAULT_TELEGRAM_TOKEN} ] && \
     printf "%s\n" "__DEFAULT_TELEGRAM_TOKEN undefined"
